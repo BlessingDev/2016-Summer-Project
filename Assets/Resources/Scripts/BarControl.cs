@@ -41,17 +41,18 @@ public class BarControl : MonoBehaviour {
         {
             Vector3 scale = mMask.transform.localScale;
 
-            scale.x += val * Time.smoothDeltaTime;
-
-            mMask.transform.localScale = scale;
-
-            bool endCheck = (val < 0) ? (scale.x < targetScale) : (scale.x > targetScale);
-            if(endCheck)
+            bool endCheck = (val < 0) ? (scale.x <= targetScale) : (scale.x >= targetScale);
+            if (endCheck)
             {
                 mIsMoving = false;
                 StopAllCoroutines();
                 break;
             }
+
+            scale.x += val * Time.smoothDeltaTime;
+
+            mMask.transform.localScale = scale;
+
             yield return null;
         }
     }
