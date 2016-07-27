@@ -18,16 +18,14 @@ public class DragHandeler : MonoBehaviour ,IBeginDragHandler , IDragHandler , IE
 
     public void OnDrag(PointerEventData eventData)
     {
-        Debug.Log("start pos " + transform.position);
         transform.position = Input.mousePosition;
-        Debug.Log("end pos " + transform.position);
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
         itemBeginDragged = null;
         GetComponent<CanvasGroup>().blocksRaycasts = true;
-        if (transform.parent != srartParent)
+        if (transform.parent == srartParent)
         {
             transform.position = startPosition;
         }
