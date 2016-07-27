@@ -154,4 +154,9 @@ public class GameManager : Manager<GameManager>
             SchedulingManager.Instance.update();
         }
     }
+
+    public void StartSchedule()
+    {
+        SchedulingManager.Instance.Progressing = true;
+    }
 }

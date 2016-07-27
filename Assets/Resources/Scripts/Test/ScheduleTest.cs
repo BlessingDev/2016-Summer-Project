@@ -16,4 +16,9 @@ public class ScheduleTest : MonoBehaviour
         SchedulingManager.Instance.SetSchedule(time, ScheduleType.TakeARest);
         time = (time) % 24 + 1;
     }
+
+    public void NextTure()
+    {
+        GameManager.Instance.StartSchedule();
+    }
 }
