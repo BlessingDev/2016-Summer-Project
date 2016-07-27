@@ -1,10 +1,31 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 public class SchedulingManager : Manager<SchedulingManager>
 {
     private Dictionary<ScheduleType, GameObject> scheduleDic;
     private Schedule[] scheduleList;
+    private int curTime = 1;
+    private float befTime = 1;
+    private float timeRate;
+    private float time;
+
+    private bool progressing;               // 현재 스케줄이 진행되고 있는가
+    public bool Progressing
+    {
+        get
+        {
+            return progressing;
+        }
+        set
+        {
+            curTime = 1;
+            befTime = 0;
+            time = 0;
+            progressing = value;
+        }
+    }
 
 	// Use this for initialization
 	void Start ()
@@ -24,7 +45,10 @@ public class SchedulingManager : Manager<SchedulingManager>
         {
             scheduleList[i] = null;
         }
-	}
+
+        timeRate = 24f / 180f; // 1일은 3분
+        progressing = false;
+    }
 
     //
     // 요약:
@@ -47,6 +71,49 @@ public class SchedulingManager : Manager<SchedulingManager>
         else
         {
             Debug.LogError("Type " + type + "object DOESN'T EXIST on prefab table");
+        }
+    }
+
+    public void update()
+    {
+        if(progressing)
+        {
+            TimeUpdate();
+            ScheduleUpdate();
+        }
+    }
+
+    void TimeUpdate()
+    {
+        time += Time.smoothDeltaTime * timeRate;
+        if(time >= 24)
+        {
+            curTime = 1;
+            befTime = 0;
+            Date date = GameManager.Instance.GameDate;
+            date.Day += 1;
+            GameManager.Instance.GameDate = date;
+
+            float dif = time - 24;
+            time = dif;
+        }
+    }
+
+    void ScheduleUpdate()
+    {
+        if(time - befTime >= 1.0f)
+        {
+            befTime = time;
+            try
+            {
+                scheduleList[curTime - 1].Effect(scheduleList[curTime - 1]);
+            }
+            catch(UnityException exc)
+            {
+                Debug.LogError(exc.Message + " at SchedulingManager.ScheduleUpdate1");
+            }
+
+            curTime += 1;
         }
     }
 }

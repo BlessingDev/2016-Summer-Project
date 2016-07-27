@@ -50,6 +50,5 @@ public class UIManager : MonoBehaviour {
 
     void UpdateBar()
     {
-        mHunger.SetValue((int)GameManager.Instance.Hunger);
     }
 }
