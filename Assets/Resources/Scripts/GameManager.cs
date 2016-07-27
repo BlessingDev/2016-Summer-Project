@@ -1,80 +1,68 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class GameManager : MonoBehaviour
+public class GameManager : Manager<GameManager>
 {
-    private static GameManager mInstance = null;
-    public static GameManager Instance
-    {
-        get
-        {
-            if (mInstance == null)
-                mInstance = FindObjectOfType<GameManager>();
 
-            if (mInstance == null)
-                mInstance = new GameObject("GameManager", new System.Type[] { typeof(GameManager) }).GetComponent<GameManager>();
-
-            return mInstance;
-        }
-    }
-    private static bool mInited = false;
-    public static bool IsInited
-    {
-        get
-        {
-            return mInited;
-        }
-    }
-
-    private bool mPause = false;
+    private bool pause = false;
     public bool IsPause
     {
         get
         {
-            return mPause;
+            return pause;
         }
     }
-    private float mTimeRate = 0;
-    private float mTime = 0;
+    private float timeRate = 0;                    // 현실 시간과 게임 내 시간의 비
+    private float mTime = 0;                       // 누적 시간
 
-    private float mHunger = 100f;
-    public float Hunger
+    private int stress;
+    public int Stress
     {
         get
         {
-            return mHunger;
+            return stress;
+        }
+
+        set
+        {
+            if(value <= 100 && value >= 0)
+            {
+                stress = value;
+            }
+            else
+            {
+                Debug.LogWarning("Stress.value invalid value");
+            }
         }
     }
-    private float mHungerDecresePerTime = 15f;
-    private float mBefUpdateTime = 0;
+
+
+    private GameObject player = null;
+    public GameObject Player
+    {
+        get
+        {
+            return player;
+        }
+    }
 
 	// Use this for initialization
-	void Start ()
+	void Start()
     {
-        mInited = true;
-        mTimeRate = 24f / 180f; // 1일은 3분
+        timeRate = 24f / 180f; // 1일은 3분
+        stress = 0;
 	}
 
     void Update()
     {
-        if (!mPause)
+        if (!pause)
         {
             TimeUpdate();
-            StatusUpdate();
         }
     }
 
     private void TimeUpdate()
     {
-        mTime += Time.smoothDeltaTime * mTimeRate;
-    }
-
-    private void StatusUpdate()
-    {
-        if(mTime - mBefUpdateTime >= 0.16f) // 10분이 지나면
-        {
-            mHunger -= mHungerDecresePerTime / 6;
-            mBefUpdateTime = mTime;
-        }
+        mTime += Time.smoothDeltaTime * timeRate;
     }
 }
