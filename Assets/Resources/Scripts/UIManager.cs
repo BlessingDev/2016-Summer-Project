@@ -2,28 +2,14 @@
 using UnityEngine.UI;
 using System.Collections;
 
-public class UIManager : MonoBehaviour {
-
-    private static UIManager mInstance = null;
-    public static UIManager Instance
+public class UIManager : Manager<UIManager>
+{
+    private Canvas canvas;
+    public Canvas Canvas
     {
         get
         {
-            if (mInstance == null)
-                mInstance = FindObjectOfType<UIManager>();
-
-            if (mInstance == null)
-                mInstance = new GameObject("GameManager", new System.Type[] { typeof(UIManager) }).GetComponent<UIManager>();
-
-            return mInstance;
-        }
-    }
-    private static bool mInited = false;
-    public static bool IsInited
-    {
-        get
-        {
-            return mInited;
+            return canvas;
         }
     }
 
@@ -33,13 +19,7 @@ public class UIManager : MonoBehaviour {
     // Use this for initialization
     void Start ()
     {
-        if (mHunger == null)
-        {
-            this.enabled = false;
-            return;
-        }
-
-        mInited = true;
+        canvas = FindObjectOfType<Canvas>();
 	}
 	
 	// Update is called once per frame

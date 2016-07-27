@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class SchedulingManager : Manager<SchedulingManager>
 {
     private Dictionary<ScheduleType, GameObject> scheduleDic;
+    private Dictionary<ScheduleType, GameObject> steakerDic;
     private Schedule[] scheduleList;
     private int curTime = 1;
     private float befTime = 1;
@@ -114,6 +115,50 @@ public class SchedulingManager : Manager<SchedulingManager>
             }
 
             curTime += 1;
+        }
+    }
+
+    public ScheduleType GetTypeAt(int time)
+    {
+        if(time >= 1 && time <= 24)
+        {
+            if(scheduleList[time - 1])
+            {
+                return scheduleList[time - 1].Type;
+            }
+            else
+            {
+                Debug.LogWarning("the Schedule DOESN'T EXIST");
+                return (ScheduleType)0;
+            }
+        }
+        else
+        {
+            Debug.LogError("time ISN'T 1~24");
+            return (ScheduleType)0;
+        }
+    }
+
+    public bool DeleteAt(int time)
+    {
+        if (time >= 1 && time <= 24)
+        {
+            if (scheduleList[time - 1])
+            {
+                Destroy(scheduleList[time - 1]);
+                scheduleList[tiem - 1] = null;
+                return true;
+            }
+            else
+            {
+                Debug.LogWarning("the Schedule DOESN'T EXIST");
+                return false;
+            }
+        }
+        else
+        {
+            Debug.LogError("time ISN'T 1~24");
+            return false;
         }
     }
 }
