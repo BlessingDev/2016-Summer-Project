@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public struct Date
 {
@@ -141,10 +142,13 @@ public class GameManager : Manager<GameManager>
         }
     }
 
+    private Dictionary<ScheduleType, int> schedulesDic;
+
 	// Use this for initialization
 	void Start()
     {
         stress = 0;
+        schedulesDic = new Dictionary<ScheduleType, int>();
 	}
 
     void Update()

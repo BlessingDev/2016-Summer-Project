@@ -32,9 +32,4 @@ public class Manager<T> : MonoBehaviour where T : Manager<T>
         inited = true;
         DontDestroyOnLoad(gameObject);
 	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
 }

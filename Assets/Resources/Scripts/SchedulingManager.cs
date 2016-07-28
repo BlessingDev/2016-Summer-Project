@@ -32,8 +32,15 @@ public class SchedulingManager : Manager<SchedulingManager>
     private GameObject preOneToTwelve = null;
     [SerializeField]
     private GameObject preThirteenToTwentyFour = null;
-    private GameObject oneToTwelve = null;
-    private GameObject thirteenToTwentyFour = null;
+    [SerializeField]
+    private SlotCollector oneToTwelve;
+    [SerializeField]
+    private SlotCollector thirteenToTwentyFour;
+
+    [SerializeField]
+    private SteakerPlate steakers;
+
+    private int curPlace = 1;
 
 	// Use this for initialization
 	void Start ()
@@ -75,19 +82,30 @@ public class SchedulingManager : Manager<SchedulingManager>
         switch(level)
         {
             case 1:
-                oneToTwelve = Instantiate<GameObject>(preOneToTwelve);
-                oneToTwelve.transform.parent = UIManager.Instance.Canvas.transform;
-                oneToTwelve.transform.localScale = Vector3.one;
-                oneToTwelve.transform.localPosition = new Vector2(-320, 0);
+                GameObject obj= Instantiate<GameObject>(preOneToTwelve);
+                obj.transform.parent = UIManager.Instance.Canvas.transform;
+                obj.transform.localScale = Vector3.one;
+                obj.transform.localPosition = new Vector2(-320, 0);
+                oneToTwelve = obj.GetComponent<SlotCollector>();
 
-                thirteenToTwentyFour = Instantiate<GameObject>(preThirteenToTwentyFour);
-                thirteenToTwentyFour.transform.parent = UIManager.Instance.Canvas.transform;
-                thirteenToTwentyFour.transform.localScale = Vector3.one;
-                thirteenToTwentyFour.transform.localPosition = new Vector2(320, 0);
-                thirteenToTwentyFour.SetActive(false);
+                obj = Instantiate<GameObject>(preThirteenToTwentyFour);
+                obj.transform.parent = UIManager.Instance.Canvas.transform;
+                obj.transform.localScale = Vector3.one;
+                obj.transform.localPosition = new Vector2(320, 0);
+                obj.SetActive(false);
+                thirteenToTwentyFour = obj.GetComponent<SlotCollector>();
+                thirteenToTwentyFour.SetImagesEnable(false);
 
+                curPlace = 1;
+
+                MakeSteakerBook();
                 break;
         }
+    }
+
+    void MakeSteakerBook()
+    {
+
     }
 
     //
@@ -110,7 +128,7 @@ public class SchedulingManager : Manager<SchedulingManager>
         }
         else
         {
-            Debug.LogError("Type " + type + "object DOESN'T EXIST on prefab table");
+            Debug.LogError("Type " + type + " object DOESN'T EXIST on prefab table");
         }
     }
 
@@ -228,5 +246,29 @@ public class SchedulingManager : Manager<SchedulingManager>
             Debug.LogError("time ISN'T 1~24");
             return null;
         }
+    }
+
+    public void MoveScheduleList(int direction)
+    {
+        if(curPlace == direction)
+        {
+            steakers.MovePlate(curPlace);
+        }
+    }
+
+    public void MoveScheduleListEnded()
+    {
+        if(curPlace == 1)
+        {
+            oneToTwelve.SetImagesEnable(false);
+            thirteenToTwentyFour.SetImagesEnable(true);
+        }
+        else
+        {
+            oneToTwelve.SetImagesEnable(true);
+            thirteenToTwentyFour.SetImagesEnable(false);
+        }
+
+        curPlace = (curPlace == 1) ? 2 : 1;
     }
 }

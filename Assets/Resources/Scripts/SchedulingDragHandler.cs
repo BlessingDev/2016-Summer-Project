@@ -6,9 +6,9 @@ public class SchedulingDragHandler : MonoBehaviour
     , IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     public static GameObject draggingItem;
-    Vector3 startPosition;
     Transform startParent;
     GameObject moveObj;
+    SchedulingDragHandler oriHandler;
 
     [SerializeField]
     ScheduleType type;
@@ -22,14 +22,14 @@ public class SchedulingDragHandler : MonoBehaviour
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        startPosition = transform.position;
-        startParent = transform.parent;
+        startParent = UIManager.Instance.Canvas.transform;
         GetComponent<CanvasGroup>().blocksRaycasts = false;
 
         moveObj = Instantiate<GameObject>(gameObject);
-        moveObj.transform.parent = UIManager.Instance.Canvas.transform;
+        moveObj.transform.parent = startParent;
         moveObj.transform.localScale = Vector3.one;
         draggingItem = moveObj;
+        oriHandler = this;
     }
 
     public void OnDrag(PointerEventData eventData)

@@ -13,9 +13,6 @@ public class UIManager : Manager<UIManager>
         }
     }
 
-    [SerializeField]
-    private BarControl mHunger = null;
-
     // Use this for initialization
     void Start ()
     {
@@ -23,12 +20,8 @@ public class UIManager : Manager<UIManager>
 	}
 	
 	// Update is called once per frame
-	void Update ()
+	void update ()
     {
-        UpdateBar();
-	}
 
-    void UpdateBar()
-    {
-    }
+	}
 }
