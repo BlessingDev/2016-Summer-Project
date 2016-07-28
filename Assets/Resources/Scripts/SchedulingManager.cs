@@ -28,12 +28,19 @@ public class SchedulingManager : Manager<SchedulingManager>
         }
     }
 
+    [SerializeField]
+    private GameObject preOneToTwelve = null;
+    [SerializeField]
+    private GameObject preThirteenToTwentyFour = null;
+    private GameObject oneToTwelve = null;
+    private GameObject thirteenToTwentyFour = null;
+
 	// Use this for initialization
 	void Start ()
     {
         scheduleDic = new Dictionary<ScheduleType, GameObject>();
 
-        GameObject[] objs = Resources.LoadAll<GameObject>("Prefabs/Schedules/");
+        GameObject[] objs = Resources.LoadAll<GameObject>("Prefabs/Schedules/Acts/");
         
         for(int i = 0; i < objs.Length; i += 1)
         {
@@ -47,8 +54,40 @@ public class SchedulingManager : Manager<SchedulingManager>
             scheduleList[i] = null;
         }
 
+        objs = Resources.LoadAll<GameObject>("Prefabs/Schedules/Steaker/");
+        for (int i = 0; i < objs.Length; i += 1)
+        {
+            SchedulingDragHandler schedule = objs[i].GetComponent<SchedulingDragHandler>();
+            scheduleDic.Add(schedule.Type, objs[i]);
+        }
+
         timeRate = 24f / 180f; // 1일은 3분
         progressing = false;
+
+        if(preOneToTwelve == null || preThirteenToTwentyFour == null)
+        {
+            Debug.LogWarning("The Prefab NOT PREPARED");
+        }
+    }
+
+    void OnLevelWasLoaded(int level)
+    {
+        switch(level)
+        {
+            case 1:
+                oneToTwelve = Instantiate<GameObject>(preOneToTwelve);
+                oneToTwelve.transform.parent = UIManager.Instance.Canvas.transform;
+                oneToTwelve.transform.localScale = Vector3.one;
+                oneToTwelve.transform.localPosition = new Vector2(-320, 0);
+
+                thirteenToTwentyFour = Instantiate<GameObject>(preThirteenToTwentyFour);
+                thirteenToTwentyFour.transform.parent = UIManager.Instance.Canvas.transform;
+                thirteenToTwentyFour.transform.localScale = Vector3.one;
+                thirteenToTwentyFour.transform.localPosition = new Vector2(320, 0);
+                thirteenToTwentyFour.SetActive(false);
+
+                break;
+        }
     }
 
     //
@@ -145,8 +184,8 @@ public class SchedulingManager : Manager<SchedulingManager>
         {
             if (scheduleList[time - 1])
             {
-                Destroy(scheduleList[time - 1]);
-                scheduleList[tiem - 1] = null;
+                Destroy(scheduleList[time - 1].gameObject);
+                scheduleList[time - 1] = null;
                 return true;
             }
             else
@@ -159,6 +198,35 @@ public class SchedulingManager : Manager<SchedulingManager>
         {
             Debug.LogError("time ISN'T 1~24");
             return false;
+        }
+    }
+
+    public GameObject GetSteaker(int time)
+    {
+        if (time >= 1 && time <= 24)
+        {
+            if (scheduleList[time - 1])
+            {
+                GameObject obj = null;
+                if(steakerDic.TryGetValue(scheduleList[time - 1].Type, out obj))
+                {
+                    return Instantiate<GameObject>(obj);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                Debug.LogWarning("The Schedule DOESN'T EXIST");
+                return null;
+            }
+        }
+        else
+        {
+            Debug.LogError("time ISN'T 1~24");
+            return null;
         }
     }
 }

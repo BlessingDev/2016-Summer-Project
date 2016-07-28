@@ -19,6 +19,16 @@ public class SchedulingSlot : MonoBehaviour, IDropHandler
         }
     }
 
+    void Start()
+    {
+        GameObject obj = SchedulingManager.Instance.GetSteaker(time);
+        if (obj != null)
+        {
+            obj.transform.parent = transform;
+            obj.transform.localScale = Vector3.one;
+        }
+    }
+
     public void OnDrop(PointerEventData eventData)
     {
         if(item)
@@ -28,5 +38,14 @@ public class SchedulingSlot : MonoBehaviour, IDropHandler
         SchedulingDragHandler.draggingItem.transform.SetParent(transform);
         SchedulingDragHandler.draggingItem.transform.localScale = Vector3.one;
         SchedulingManager.Instance.SetSchedule(time, SchedulingDragHandler.draggingItem.GetComponent<SchedulingDragHandler>().Type);
+    }
+
+    public void OnClick()
+    {
+        if(item)
+        {
+            Destroy(item);
+        }
+        SchedulingManager.Instance.DeleteAt(time);
     }
 }

@@ -33,6 +33,7 @@ public abstract class Schedule : MonoBehaviour
 	void Start()
     {
         ended = false;
+        DontDestroyOnLoad(this);
 	}
 
     public abstract void Effect(Schedule obj);
