@@ -129,8 +129,14 @@ public class GameManager : Manager<GameManager>
     private Date gameDate;
     public Date GameDate
     {
-        get;
-        set;
+        get
+        {
+            return gameDate;
+        }
+        set
+        {
+            gameDate = value;
+        }
     }
 
     private GameObject player = null;
@@ -176,6 +182,10 @@ public class GameManager : Manager<GameManager>
         parameterLimit = new Dictionary<string, int>();
 
         parameterLimit.Add("Stress", 100);
+
+        gameDate.Year = 1;
+        gameDate.Month = 1;
+        gameDate.Day = 1;
 
         if(PreSchedulePopup == null)
         {

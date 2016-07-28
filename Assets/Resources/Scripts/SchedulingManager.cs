@@ -317,4 +317,10 @@ public class SchedulingManager : Manager<SchedulingManager>
 
         curPlace = (curPlace == 1) ? 2 : 1;
     }
+
+    public void ResetSchedules()
+    {
+        oneToTwelve.Reset();
+        thirteenToTwentyFour.Reset();
+    }
 }

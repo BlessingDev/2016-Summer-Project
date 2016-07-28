@@ -10,7 +10,7 @@ public class SyncClockPin : MonoBehaviour
 
         int degree = 30 * (time % 12);
         Vector3 angles = transform.localEulerAngles;
-        angles.z = degree;
+        angles.z = -degree;
         transform.localEulerAngles = angles;
 	}
 }

@@ -31,7 +31,7 @@ public class ObjectFollower : MonoBehaviour
 
 	void Update()
     {
-        Vector2 dif = oriOther - (Vector2)other.transform.position;
+        Vector2 dif =  (Vector2)other.transform.position - oriOther;
         transform.position = oriThis + dif;
     }
 }
