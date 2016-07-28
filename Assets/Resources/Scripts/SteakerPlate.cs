@@ -11,7 +11,7 @@ public class SteakerPlate : MonoBehaviour
 
     IEnumerator CorMovePlate(int direction)
     {
-        float speed = 300;
+        float speed = 900;
         while(true)
         {
             if(!GameManager.Instance.IsPause)
@@ -22,9 +22,9 @@ public class SteakerPlate : MonoBehaviour
                 {
                     pos.x -= speed * Time.smoothDeltaTime;
 
-                    if(pos.x <= -320)
+                    if(pos.x <= -276)
                     {
-                        pos.x = -320;
+                        pos.x = -276;
 
                         transform.localPosition = pos;
                         SchedulingManager.Instance.MoveScheduleListEnded();
@@ -40,9 +40,9 @@ public class SteakerPlate : MonoBehaviour
                 {
                     pos.x += speed * Time.smoothDeltaTime;
 
-                    if (pos.x >= 320)
+                    if (pos.x >= 276)
                     {
-                        pos.x = 320;
+                        pos.x = 276;
 
                         transform.localPosition = pos;
                         SchedulingManager.Instance.MoveScheduleListEnded();

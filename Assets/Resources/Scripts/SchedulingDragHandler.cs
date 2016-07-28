@@ -50,6 +50,7 @@ public class SchedulingDragHandler : MonoBehaviour
             moveObj = Instantiate<GameObject>(gameObject);
             moveObj.transform.parent = startParent;
             moveObj.transform.localScale = Vector3.one;
+            moveObj.GetComponent<UnityEngine.UI.Image>().SetNativeSize();
             draggingItem = moveObj;
             moveObj.GetComponent<SchedulingDragHandler>().oriHandler = this;
         }

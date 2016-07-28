@@ -11,6 +11,11 @@ public class ScheduleTakeARest : Schedule
         type = ScheduleType.TakeARest;
 	}
 
+    public override void TypeInit()
+    {
+        Start();
+    }
+
     public override void Effect(Schedule obj)
     {
         GameManager.Instance.SetParameter("Stress", GameManager.Instance.GetParameter("Stress") - 1);

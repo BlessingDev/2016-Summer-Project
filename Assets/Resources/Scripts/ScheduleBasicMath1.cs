@@ -4,11 +4,16 @@ using System;
 
 public class ScheduleBasicMath1 : Schedule
 {
-
 	// Use this for initialization
-	void Start () {
+	void Start ()
+    {
         type = ScheduleType.BasicMath;
 	}
+
+    public override void TypeInit()
+    {
+        Start();
+    }
 
     public override void Effect(Schedule obj)
     {

@@ -5,8 +5,7 @@ public enum ScheduleType
 {
     TakeARest,
     English,
-    BasicMath,
-    BasicMath2
+    BasicMath
 }
 
 public abstract class Schedule : MonoBehaviour
@@ -35,6 +34,8 @@ public abstract class Schedule : MonoBehaviour
         ended = false;
         DontDestroyOnLoad(this);
 	}
+
+    public abstract void TypeInit();
 
     public abstract void Effect(Schedule obj);
 }

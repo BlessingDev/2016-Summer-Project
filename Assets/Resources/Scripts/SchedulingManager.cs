@@ -55,6 +55,7 @@ public class SchedulingManager : Manager<SchedulingManager>
         for(int i = 0; i < objs.Length; i += 1)
         {
             Schedule schedule = objs[i].GetComponent<Schedule>();
+            schedule.TypeInit();
             scheduleDic.Add(schedule.Type, objs[i]);
         }
 
