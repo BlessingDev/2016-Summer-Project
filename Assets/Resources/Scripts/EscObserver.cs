@@ -3,7 +3,7 @@
 public abstract class EscObserver : MonoBehaviour
 {
 	
-    void update()
+    public void update()
     {
         if(Input.GetKeyDown(KeyCode.Escape))
         {

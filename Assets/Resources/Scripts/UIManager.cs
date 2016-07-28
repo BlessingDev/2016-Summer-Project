@@ -13,20 +13,25 @@ public class UIManager : Manager<UIManager>
         }
     }
 
+    private EscObserver observer = null;
+
     // Use this for initialization
     void Start ()
     {
         canvas = FindObjectOfType<Canvas>();
+        observer = FindObjectOfType<EscObserver>();
 	}
 	
     public void OnLevelWasLoaded(int level)
     {
         canvas = FindObjectOfType<Canvas>();
+        observer = FindObjectOfType<EscObserver>();
     }
 
     // Update is called once per frame
-    void update ()
+    public void update ()
     {
-
+        if (observer != null)
+            observer.update();
 	}
 }
