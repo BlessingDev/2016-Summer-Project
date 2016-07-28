@@ -153,6 +153,10 @@ public class GameManager : Manager<GameManager>
     private Dictionary<string, float> parameters;
     private Dictionary<string, int> parameterLimit;
 
+    private bool executeSchedule = false;       // 스케쥴 실행이 예약되어 있는가
+    [SerializeField]
+    private GameObject PreSchedulePopup = null;
+
 	// Use this for initialization
 	void Start()
     {
@@ -172,7 +176,12 @@ public class GameManager : Manager<GameManager>
         parameterLimit = new Dictionary<string, int>();
 
         parameterLimit.Add("Stress", 100);
-	}
+
+        if(PreSchedulePopup == null)
+        {
+            Debug.LogWarning("The Prefab NOT PREPARED");
+        }
+    }
 
     void Update()
     {
@@ -180,6 +189,26 @@ public class GameManager : Manager<GameManager>
         {
             SchedulingManager.Instance.update();
             UIManager.Instance.update();
+        }
+    }
+
+    void OnLevelWasLoaded(int level)
+    {
+        UIManager.Instance.OnLevelWasLoaded(level);
+        switch(level)
+        {
+            case 0:
+                if(executeSchedule)
+                {
+                    executeSchedule = false;
+                    SchedulingManager.Instance.Progressing = true;
+
+                    GameObject popup = Instantiate(PreSchedulePopup);
+                    popup.transform.parent = UIManager.Instance.Canvas.transform;
+                    popup.transform.localPosition = new Vector2(0, -20);
+                    popup.transform.localScale = Vector3.one;
+                }
+                break;
         }
     }
 
@@ -230,5 +259,11 @@ public class GameManager : Manager<GameManager>
         parameters.Add(name, value);
 
         return true;
+    }
+
+    public void ScheduleExecute()
+    {
+        executeSchedule = true;
+        SceneManager.Instance.ChangeScene("GameScene");
     }
 }

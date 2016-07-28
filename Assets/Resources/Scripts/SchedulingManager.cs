@@ -12,6 +12,13 @@ public class SchedulingManager : Manager<SchedulingManager>
     private float befTime = 1;
     private float timeRate;
     private float time;
+    public float GameTime
+    {
+        get
+        {
+            return time;
+        }
+    }
 
     private bool progressing;               // 현재 스케줄이 진행되고 있는가
     public bool Progressing
@@ -38,6 +45,8 @@ public class SchedulingManager : Manager<SchedulingManager>
 
     [SerializeField]
     private GameObject preSteakerPlate = null;
+    [SerializeField]
+    private GameObject preSteakerButton = null;
     private SteakerPlate steakers;
 
     private int curPlace = 1;
@@ -74,7 +83,7 @@ public class SchedulingManager : Manager<SchedulingManager>
         progressing = false;
 
         if(preOneToTwelve == null || preThirteenToTwentyFour == null ||
-            preSteakerPlate == null)
+            preSteakerPlate == null || preSteakerButton == null)
         {
             Debug.LogWarning("The Prefab NOT PREPARED");
         }
@@ -116,6 +125,12 @@ public class SchedulingManager : Manager<SchedulingManager>
         steakers.transform.localPosition = new Vector2(276, 0);
         steakers.transform.localScale = Vector3.one;
 
+        GameObject obj = Instantiate(preSteakerButton);
+        obj.transform.parent = UIManager.Instance.Canvas.transform;
+        obj.transform.localPosition = new Vector2(276, 0);
+        obj.transform.localScale = Vector3.one;
+        obj.GetComponent<ObjectFollower>().Other = steakers.transform;
+
         var dic = GameManager.Instance.SchedulesDic;
 
         int useLength = dic.Count * 50 + (dic.Count - 1) * 70;
@@ -124,7 +139,6 @@ public class SchedulingManager : Manager<SchedulingManager>
 
         foreach(var iter in dic)
         {
-            GameObject obj;
             if(steakerDic.TryGetValue(iter.Key, out obj))
             {
                 GameObject ste = Instantiate(obj);
