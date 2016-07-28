@@ -7,7 +7,7 @@ public class SlotCollector : MonoBehaviour
     private Image[] images = new Image[12];
 
 	// Use this for initialization
-	void Start ()
+	public void Start ()
     {
 	    for(int i = 0; i < 12; i += 1)
         {

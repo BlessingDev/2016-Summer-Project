@@ -19,8 +19,13 @@ public class UIManager : Manager<UIManager>
         canvas = FindObjectOfType<Canvas>();
 	}
 	
-	// Update is called once per frame
-	void update ()
+    public void OnLevelWasLoaded(int level)
+    {
+        canvas = FindObjectOfType<Canvas>();
+    }
+
+    // Update is called once per frame
+    void update ()
     {
 
 	}

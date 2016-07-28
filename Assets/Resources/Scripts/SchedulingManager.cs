@@ -33,14 +33,11 @@ public class SchedulingManager : Manager<SchedulingManager>
     private GameObject preOneToTwelve = null;
     [SerializeField]
     private GameObject preThirteenToTwentyFour = null;
-    [SerializeField]
     private SlotCollector oneToTwelve;
-    [SerializeField]
     private SlotCollector thirteenToTwentyFour;
 
     [SerializeField]
     private GameObject preSteakerPlate = null;
-    [SerializeField]
     private SteakerPlate steakers;
 
     private int curPlace = 1;
@@ -49,6 +46,7 @@ public class SchedulingManager : Manager<SchedulingManager>
 	void Start ()
     {
         scheduleDic = new Dictionary<ScheduleType, GameObject>();
+        steakerDic = new Dictionary<ScheduleType, GameObject>();
 
         GameObject[] objs = Resources.LoadAll<GameObject>("Prefabs/Schedules/Acts/");
         
@@ -65,11 +63,11 @@ public class SchedulingManager : Manager<SchedulingManager>
             scheduleList[i] = null;
         }
 
-        objs = Resources.LoadAll<GameObject>("Prefabs/Schedules/Steaker/");
+        objs = Resources.LoadAll<GameObject>("Prefabs/Schedules/Steakers/");
         for (int i = 0; i < objs.Length; i += 1)
         {
             SchedulingDragHandler schedule = objs[i].GetComponent<SchedulingDragHandler>();
-            scheduleDic.Add(schedule.Type, objs[i]);
+            steakerDic.Add(schedule.Type, objs[i]);
         }
 
         timeRate = 24f / 180f; // 1일은 3분
@@ -84,6 +82,7 @@ public class SchedulingManager : Manager<SchedulingManager>
 
     void OnLevelWasLoaded(int level)
     {
+        UIManager.Instance.OnLevelWasLoaded(level);
         switch(level)
         {
             case 1:
@@ -97,8 +96,8 @@ public class SchedulingManager : Manager<SchedulingManager>
                 obj.transform.parent = UIManager.Instance.Canvas.transform;
                 obj.transform.localScale = Vector3.one;
                 obj.transform.localPosition = new Vector2(320, 0);
-                obj.SetActive(false);
                 thirteenToTwentyFour = obj.GetComponent<SlotCollector>();
+                thirteenToTwentyFour.Start();
                 thirteenToTwentyFour.SetImagesEnable(false);
 
                 curPlace = 1;
@@ -114,13 +113,14 @@ public class SchedulingManager : Manager<SchedulingManager>
         GridLayoutGroup group = steakers.GetComponent<GridLayoutGroup>();
 
         steakers.transform.parent = UIManager.Instance.Canvas.transform;
+        steakers.transform.localPosition = new Vector2(276, 0);
         steakers.transform.localScale = Vector3.one;
 
         var dic = GameManager.Instance.SchedulesDic;
 
         int useLength = dic.Count * 50 + (dic.Count - 1) * 70;
 
-        group.padding.top = (720 - useLength) / 2;
+        group.padding.top = (678 - useLength) / 2;
 
         foreach(var iter in dic)
         {

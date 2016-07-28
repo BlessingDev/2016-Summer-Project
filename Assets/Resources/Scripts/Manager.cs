@@ -14,6 +14,9 @@ public class Manager<T> : MonoBehaviour where T : Manager<T>
             if (instance == null)
                 instance = new GameObject(typeof(T).Name, new System.Type[] { typeof(T) }).GetComponent<T>();
 
+            if (!inited)
+                instance.Init();
+
             return instance;
         }
     }
@@ -26,10 +29,22 @@ public class Manager<T> : MonoBehaviour where T : Manager<T>
         }
     }
 
+    virtual public void Init()
+    {
+        if (FindObjectsOfType<T>().Length > 1)
+        {
+            Destroy(this);
+            return;
+        }
+
+        inited = true;
+        DontDestroyOnLoad(gameObject);
+    }
+
 	// Use this for initialization
 	void Start ()
     {
-        inited = true;
-        DontDestroyOnLoad(gameObject);
+        if(!inited)
+            Init();
 	}
 }
