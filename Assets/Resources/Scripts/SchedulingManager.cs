@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class SchedulingManager : Manager<SchedulingManager>
 {
@@ -38,6 +39,8 @@ public class SchedulingManager : Manager<SchedulingManager>
     private SlotCollector thirteenToTwentyFour;
 
     [SerializeField]
+    private GameObject preSteakerPlate = null;
+    [SerializeField]
     private SteakerPlate steakers;
 
     private int curPlace = 1;
@@ -71,7 +74,8 @@ public class SchedulingManager : Manager<SchedulingManager>
         timeRate = 24f / 180f; // 1일은 3분
         progressing = false;
 
-        if(preOneToTwelve == null || preThirteenToTwentyFour == null)
+        if(preOneToTwelve == null || preThirteenToTwentyFour == null ||
+            preSteakerPlate == null)
         {
             Debug.LogWarning("The Prefab NOT PREPARED");
         }
@@ -105,7 +109,34 @@ public class SchedulingManager : Manager<SchedulingManager>
 
     void MakeSteakerBook()
     {
+        steakers = Instantiate(preSteakerPlate).GetComponent<SteakerPlate>();
+        GridLayoutGroup group = steakers.GetComponent<GridLayoutGroup>();
 
+        steakers.transform.parent = UIManager.Instance.Canvas.transform;
+        steakers.transform.localScale = Vector3.one;
+
+        var dic = GameManager.Instance.SchedulesDic;
+
+        int useLength = dic.Count * 50 + (dic.Count - 1) * 70;
+
+        group.padding.top = (720 - useLength) / 2;
+
+        foreach(var iter in dic)
+        {
+            GameObject obj;
+            if(steakerDic.TryGetValue(iter.Key, out obj))
+            {
+                GameObject ste = Instantiate(obj);
+                ste.transform.parent = steakers.transform;
+                ste.transform.localScale = Vector3.one;
+
+                ste.GetComponent<Steaker>().Num = iter.Value;
+            }
+            else
+            {
+                Debug.LogError("The Schedule DOESN'T EXIST");
+            }
+        }
     }
 
     //

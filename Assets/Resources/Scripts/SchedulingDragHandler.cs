@@ -9,6 +9,21 @@ public class SchedulingDragHandler : MonoBehaviour
     Transform startParent;
     GameObject moveObj;
     SchedulingDragHandler oriHandler;
+    public SchedulingDragHandler OriHandler
+    {
+        get
+        {
+            return oriHandler;
+        }
+    }
+    private Steaker steaker;
+    public Steaker Steaker
+    {
+        get
+        {
+            return steaker;
+        }
+    }
 
     [SerializeField]
     ScheduleType type;
@@ -20,16 +35,24 @@ public class SchedulingDragHandler : MonoBehaviour
         }
     }
 
+    void Start()
+    {
+        steaker = GetComponent<Steaker>();
+    }
+
     public void OnBeginDrag(PointerEventData eventData)
     {
-        startParent = UIManager.Instance.Canvas.transform;
-        GetComponent<CanvasGroup>().blocksRaycasts = false;
+        if(steaker.Num > 0 || steaker.Num == -1)
+        {
+            startParent = UIManager.Instance.Canvas.transform;
+            GetComponent<CanvasGroup>().blocksRaycasts = false;
 
-        moveObj = Instantiate<GameObject>(gameObject);
-        moveObj.transform.parent = startParent;
-        moveObj.transform.localScale = Vector3.one;
-        draggingItem = moveObj;
-        oriHandler = this;
+            moveObj = Instantiate<GameObject>(gameObject);
+            moveObj.transform.parent = startParent;
+            moveObj.transform.localScale = Vector3.one;
+            draggingItem = moveObj;
+            moveObj.GetComponent<SchedulingDragHandler>().oriHandler = this;
+        }
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -44,6 +67,13 @@ public class SchedulingDragHandler : MonoBehaviour
         if (moveObj.transform.parent == startParent)
         {
             Destroy(moveObj);
+        }
+        else
+        {
+            if(steaker.Num > 0)
+            {
+                steaker.Num -= 1;
+            }
         }
         moveObj = null;
     }

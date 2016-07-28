@@ -47,5 +47,7 @@ public class SchedulingSlot : MonoBehaviour, IDropHandler
             Destroy(item);
         }
         SchedulingManager.Instance.DeleteAt(time);
+
+        item.GetComponent<SchedulingDragHandler>().OriHandler.Steaker.Num += 1;
     }
 }

@@ -143,12 +143,35 @@ public class GameManager : Manager<GameManager>
     }
 
     private Dictionary<ScheduleType, int> schedulesDic;
+    public Dictionary<ScheduleType, int> SchedulesDic
+    {
+        get
+        {
+            return schedulesDic;
+        }
+    }
+    private Dictionary<string, float> parameters;
+    private Dictionary<string, int> parameterLimit;
 
 	// Use this for initialization
 	void Start()
     {
         stress = 0;
         schedulesDic = new Dictionary<ScheduleType, int>();
+
+        schedulesDic.Add(ScheduleType.TakeARest, -1);
+        schedulesDic.Add(ScheduleType.BasicMath, 8);
+        schedulesDic.Add(ScheduleType.English, 8);
+
+        parameters = new Dictionary<string, float>();
+
+        parameters.Add("Stress", 0);
+        parameters.Add("BasicMath1", 0);
+        parameters.Add("English", 0);
+
+        parameterLimit = new Dictionary<string, int>();
+
+        parameterLimit.Add("Stress", 100);
 	}
 
     void Update()
@@ -162,5 +185,49 @@ public class GameManager : Manager<GameManager>
     public void StartSchedule()
     {
         SchedulingManager.Instance.Progressing = true;
+    }
+
+    public float GetParameter(string name)
+    {
+        float val = 0;
+        if(parameters.TryGetValue(name, out val))
+        {
+            return val;
+        }
+        else
+        {
+            Debug.LogError("parameters DOESN'T HAVE " + name);
+            return -1;
+        }
+    }
+
+    public bool SetParameter(string name, float value)
+    {
+        if(!parameters.ContainsKey(name))
+        {
+            Debug.LogError("parameters DOESN'T HAVE " + name);
+            return false;
+        }
+
+        if (value < 0)
+        {
+            value = 0;
+            Debug.LogWarning("Parameter " + name + " LowerLimit Bound");
+        }
+
+        int limit;
+        if(parameterLimit.TryGetValue(name, out limit))
+        {
+            if (value > limit)
+            {
+                value = limit;
+                Debug.LogWarning("Parameter " + name + " UpperLimit Bound");
+            }
+        }
+
+        parameters.Remove(name);
+        parameters.Add(name, value);
+
+        return true;
     }
 }
