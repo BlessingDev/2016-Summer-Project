@@ -33,12 +33,23 @@ public class Manager<T> : MonoBehaviour where T : Manager<T>
     {
         if (FindObjectsOfType<T>().Length > 1)
         {
-            Destroy(this);
+            if(this != instance)
+                Destroy(this);
             return;
         }
 
         inited = true;
         DontDestroyOnLoad(gameObject);
+    }
+
+    public virtual void OnLevelWasLoaded(int level)
+    {
+        if (FindObjectsOfType<T>().Length > 1)
+        {
+            if (this != instance)
+                Destroy(this);
+            return;
+        }
     }
 
 	// Use this for initialization

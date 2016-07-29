@@ -29,9 +29,8 @@ public abstract class Schedule : MonoBehaviour
     }
 
 	// Use this for initialization
-	void Start()
+	protected void Start()
     {
-        ended = false;
         DontDestroyOnLoad(this);
 	}
 

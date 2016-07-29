@@ -6,8 +6,9 @@ public class ScheduleTakeARest : Schedule
 {
 
 	// Use this for initialization
-	void Start ()
+	new void Start ()
     {
+        base.Start();
         type = ScheduleType.TakeARest;
 	}
 

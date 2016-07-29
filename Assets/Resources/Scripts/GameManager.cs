@@ -164,6 +164,7 @@ public class GameManager : Manager<GameManager>
     private GameObject preSchedulePopup = null;
     [SerializeField]
     private GameObject prePausePopup = null;
+    private GameObject pausePopup = null;
 
 	// Use this for initialization
 	void Start()
@@ -189,7 +190,7 @@ public class GameManager : Manager<GameManager>
         gameDate.Month = 1;
         gameDate.Day = 1;
 
-        if(preSchedulePopup == null)
+        if(preSchedulePopup == null || prePausePopup == null)
         {
             Debug.LogWarning("The Prefab NOT PREPARED");
         }
@@ -204,13 +205,15 @@ public class GameManager : Manager<GameManager>
         }
     }
 
-    void OnLevelWasLoaded(int level)
+    public override void OnLevelWasLoaded(int level)
     {
+        base.OnLevelWasLoaded(level);
+
         UIManager.Instance.OnLevelWasLoaded(level);
-        switch(level)
+        switch (level)
         {
             case 0:
-                if(executeSchedule)
+                if (executeSchedule)
                 {
                     executeSchedule = false;
                     SchedulingManager.Instance.Progressing = true;
@@ -282,11 +285,20 @@ public class GameManager : Manager<GameManager>
     public void PauseGame()
     {
         UIManager.Instance.SetEnableTouchLayer("Main", false);
+        pause = true;
 
+        pausePopup = Instantiate(prePausePopup);
+        pausePopup.transform.parent = UIManager.Instance.Canvas.transform;
+        pausePopup.transform.localPosition = Vector3.zero;
+        pausePopup.transform.localScale = Vector3.one;
     }
 
     public void ResumeGame()
     {
+        UIManager.Instance.SetEnableTouchLayer("Main", true);
+        pause = false;
 
+        Destroy(pausePopup);
+        pausePopup = null;
     }
 }

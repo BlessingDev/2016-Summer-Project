@@ -25,11 +25,13 @@ public class UIManager : Manager<UIManager>
         layersDic = new Dictionary<string, List<Image>>();
 	}
 	
-    public void OnLevelWasLoaded(int level)
+    override public void OnLevelWasLoaded(int level)
     {
+        base.OnLevelWasLoaded(level);
         canvas = FindObjectOfType<Canvas>();
         observer = FindObjectOfType<EscObserver>();
-        layersDic.Clear();
+        if(layersDic != null)
+            layersDic.Clear();
     }
 
     // Update is called once per frame

@@ -5,8 +5,9 @@ using System;
 public class ScheduleBasicMath1 : Schedule
 {
 	// Use this for initialization
-	void Start ()
+	new void Start ()
     {
+        base.Start();
         type = ScheduleType.BasicMath;
 	}
 
