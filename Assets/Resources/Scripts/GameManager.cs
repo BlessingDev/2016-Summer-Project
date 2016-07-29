@@ -161,7 +161,9 @@ public class GameManager : Manager<GameManager>
 
     private bool executeSchedule = false;       // 스케쥴 실행이 예약되어 있는가
     [SerializeField]
-    private GameObject PreSchedulePopup = null;
+    private GameObject preSchedulePopup = null;
+    [SerializeField]
+    private GameObject prePausePopup = null;
 
 	// Use this for initialization
 	void Start()
@@ -187,7 +189,7 @@ public class GameManager : Manager<GameManager>
         gameDate.Month = 1;
         gameDate.Day = 1;
 
-        if(PreSchedulePopup == null)
+        if(preSchedulePopup == null)
         {
             Debug.LogWarning("The Prefab NOT PREPARED");
         }
@@ -213,7 +215,7 @@ public class GameManager : Manager<GameManager>
                     executeSchedule = false;
                     SchedulingManager.Instance.Progressing = true;
 
-                    GameObject popup = Instantiate(PreSchedulePopup);
+                    GameObject popup = Instantiate(preSchedulePopup);
                     popup.transform.parent = UIManager.Instance.Canvas.transform;
                     popup.transform.localPosition = new Vector2(0, -20);
                     popup.transform.localScale = Vector3.one;
@@ -275,5 +277,16 @@ public class GameManager : Manager<GameManager>
     {
         executeSchedule = true;
         SceneManager.Instance.ChangeScene("GameScene");
+    }
+
+    public void PauseGame()
+    {
+        UIManager.Instance.SetEnableTouchLayer("Main", false);
+
+    }
+
+    public void ResumeGame()
+    {
+
     }
 }

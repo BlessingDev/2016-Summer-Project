@@ -79,7 +79,7 @@ public class SchedulingManager : Manager<SchedulingManager>
             steakerDic.Add(schedule.Type, objs[i]);
         }
 
-        timeRate = 24f / 180f; // 1일은 3분
+        timeRate = 1f / 2f; // 1일은 48초
         progressing = false;
 
         if(preOneToTwelve == null || preThirteenToTwentyFour == null ||
