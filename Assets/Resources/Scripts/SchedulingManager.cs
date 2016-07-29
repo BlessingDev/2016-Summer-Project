@@ -39,6 +39,7 @@ public class SchedulingManager : Manager<SchedulingManager>
             curTime = 1;
             befTime = 0;
             time = 0;
+            SetCutSceneAnimation();
             progressing = value;
         }
     }
@@ -64,7 +65,7 @@ public class SchedulingManager : Manager<SchedulingManager>
     private GameObject preStudyMethodPopup = null;
     private GameObject studyMethodPopup = null;
 
-    private int studyMode = 1;
+    private int studyMode = 2;
     public int StudyMode
     {
         get
@@ -208,6 +209,11 @@ public class SchedulingManager : Manager<SchedulingManager>
     //
     public void SetSchedule(int time, ScheduleType type)
     {
+        if(scheduleList[time - 1] != null)
+        {
+            DeleteAt(time);
+        }
+
         GameObject obj = null;
         if(scheduleDic.TryGetValue(type, out obj))
         {
@@ -261,7 +267,13 @@ public class SchedulingManager : Manager<SchedulingManager>
             }
 
             curTime += 1;
+            SetCutSceneAnimation();
         }
+    }
+
+    void SetCutSceneAnimation()
+    {
+        GameManager.Instance.SetCutSceneAnimation(scheduleList[curTime - 1].Type);
     }
 
     public ScheduleType GetTypeAt(int time)

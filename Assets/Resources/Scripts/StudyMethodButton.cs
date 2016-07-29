@@ -12,11 +12,30 @@ public class StudyMethodButton : MonoBehaviour
     {
 	    if(method == SchedulingManager.Instance.StudyMode)
         {
-            Sprite sprite = Resources.Load<Sprite>("Sprites/PausePopup/UI_Button_Sound_On_Pushed");
+            Sprite sprite = Resources.Load<Sprite>("Sprites/ScheduleUI/Study_" + name + "_Checked");
             GetComponent<Image>().sprite = sprite;
         }
 	}
-	
+
+    public void SetToNormalSprite()
+    {
+        Sprite sprite = Resources.Load<Sprite>("Sprites/ScheduleUI/Study_" + name);
+        GetComponent<Image>().sprite = sprite;
+    }
+
+    public void OnDown()
+    {
+        var objs = FindObjectsOfType<StudyMethodButton>();
+
+        for (int i = 0; i < 3; i += 1)
+        {
+            if(objs[i] != this)
+            {
+                objs[i].SetToNormalSprite();
+            }
+        }
+    }
+
     public void OnClick()
     {
         SchedulingManager.Instance.StudyMode = method;

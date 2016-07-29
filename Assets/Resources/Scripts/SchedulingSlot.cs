@@ -31,10 +31,17 @@ public class SchedulingSlot : MonoBehaviour, IDropHandler
 
     public void OnDrop(PointerEventData eventData)
     {
-        if(item)
+        if(SchedulingDragHandler.draggingItem == null)
+        {
+            Debug.LogWarning("draggingItem is NULL");
+            return;
+        }
+
+        if (item)
         {
             Destroy(item);
         }
+
         SchedulingDragHandler.draggingItem.transform.SetParent(transform);
         SchedulingDragHandler.draggingItem.transform.localScale = Vector3.one;
         SchedulingManager.Instance.SetSchedule(time, SchedulingDragHandler.draggingItem.GetComponent<SchedulingDragHandler>().Type);

@@ -47,7 +47,7 @@ public class SchedulingDragHandler : MonoBehaviour
             startParent = UIManager.Instance.Canvas.transform;
             GetComponent<CanvasGroup>().blocksRaycasts = false;
 
-            moveObj = Instantiate<GameObject>(gameObject);
+            moveObj = Instantiate(gameObject);
             moveObj.transform.parent = startParent;
             moveObj.transform.localScale = Vector3.one;
             moveObj.GetComponent<UnityEngine.UI.Image>().SetNativeSize();
@@ -58,24 +58,30 @@ public class SchedulingDragHandler : MonoBehaviour
 
     public void OnDrag(PointerEventData eventData)
     {
-        moveObj.transform.position = Input.mousePosition;
+        if (steaker.Num > 0 || steaker.Num == -1)
+        {
+            moveObj.transform.position = Input.mousePosition;
+        }
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        draggingItem = null;
-        GetComponent<CanvasGroup>().blocksRaycasts = true;
-        if (moveObj.transform.parent == startParent)
+        if (steaker.Num > 0 || steaker.Num == -1)
         {
-            Destroy(moveObj);
-        }
-        else
-        {
-            if(steaker.Num > 0)
+            draggingItem = null;
+            GetComponent<CanvasGroup>().blocksRaycasts = true;
+            if (moveObj.transform.parent == startParent)
             {
-                steaker.Num -= 1;
+                Destroy(moveObj);
             }
+            else
+            {
+                if (steaker.Num > 0)
+                {
+                    steaker.Num -= 1;
+                }
+            }
+            moveObj = null;
         }
-        moveObj = null;
     }
 }

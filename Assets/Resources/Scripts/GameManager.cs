@@ -165,6 +165,7 @@ public class GameManager : Manager<GameManager>
     [SerializeField]
     private GameObject prePausePopup = null;
     private GameObject pausePopup = null;
+    private Animator cutSceneAnimator = null;
 
 	// Use this for initialization
 	void Start()
@@ -216,12 +217,17 @@ public class GameManager : Manager<GameManager>
                 if (executeSchedule)
                 {
                     executeSchedule = false;
-                    SchedulingManager.Instance.Progressing = true;
 
                     GameObject popup = Instantiate(preSchedulePopup);
                     popup.transform.parent = UIManager.Instance.Canvas.transform;
                     popup.transform.localPosition = new Vector2(0, -20);
                     popup.transform.localScale = Vector3.one;
+
+                    GameObject obj = popup.transform.GetChild(0).gameObject;
+                    var ani = obj.GetComponent<Animator>();
+                    cutSceneAnimator = ani;
+
+                    SchedulingManager.Instance.Progressing = true;
                 }
                 break;
         }
@@ -300,5 +306,28 @@ public class GameManager : Manager<GameManager>
 
         Destroy(pausePopup);
         pausePopup = null;
+    }
+
+    public void SetCutSceneAnimation(ScheduleType type)
+    {
+        if(cutSceneAnimator == null)
+        {
+            Debug.LogError("Animator is NULL");
+            return;
+        }
+
+        int aniType = 0;
+        switch(type)
+        {
+            case ScheduleType.TakeARest:
+                aniType = 1;
+                break;
+            case ScheduleType.BasicMath:
+            case ScheduleType.English:
+                aniType = 2;
+                break;
+        }
+
+        cutSceneAnimator.SetInteger("AnimationType", aniType);
     }
 }
