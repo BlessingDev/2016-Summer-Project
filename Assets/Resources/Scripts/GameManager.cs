@@ -162,6 +162,7 @@ public class GameManager : Manager<GameManager>
     private bool executeSchedule = false;       // 스케쥴 실행이 예약되어 있는가
     [SerializeField]
     private GameObject preSchedulePopup = null;
+    private GameObject schedulePopup = null;
     [SerializeField]
     private GameObject prePausePopup = null;
     private GameObject pausePopup = null;
@@ -218,12 +219,12 @@ public class GameManager : Manager<GameManager>
                 {
                     executeSchedule = false;
 
-                    GameObject popup = Instantiate(preSchedulePopup);
-                    popup.transform.parent = UIManager.Instance.Canvas.transform;
-                    popup.transform.localPosition = new Vector2(0, -20);
-                    popup.transform.localScale = Vector3.one;
+                    schedulePopup = Instantiate(preSchedulePopup);
+                    schedulePopup.transform.parent = UIManager.Instance.Canvas.transform;
+                    schedulePopup.transform.localPosition = new Vector2(-150, -20);
+                    schedulePopup.transform.localScale = Vector3.one;
 
-                    GameObject obj = popup.transform.GetChild(0).gameObject;
+                    GameObject obj = schedulePopup.transform.GetChild(0).gameObject;
                     var ani = obj.GetComponent<Animator>();
                     cutSceneAnimator = ani;
 
@@ -329,5 +330,11 @@ public class GameManager : Manager<GameManager>
         }
 
         cutSceneAnimator.SetInteger("AnimationType", aniType);
+    }
+
+    public void CloseSchedulePopup()
+    {
+        Destroy(schedulePopup);
+        schedulePopup = null;
     }
 }

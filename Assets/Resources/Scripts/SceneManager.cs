@@ -35,4 +35,18 @@ public class SceneManager : Manager<SceneManager>
     {
         UnityEngine.SceneManagement.SceneManager.LoadScene(index);
     }
+
+    public int GetLevel(string name)
+    {
+        int index;
+        if(scenes.TryGetValue(name, out index))
+        {
+            return index;
+        }
+        else
+        {
+            Debug.LogError("Could Not FIND scene name " + name);
+            return -1;
+        }
+    }
 }

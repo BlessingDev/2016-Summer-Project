@@ -78,6 +78,19 @@ public class SchedulingManager : Manager<SchedulingManager>
         }
     }
 
+    private bool gotoMainReserved = false;
+    public bool GotoMainReserved
+    {
+        get
+        {
+            return gotoMainReserved;
+        }
+        set
+        {
+            gotoMainReserved = value;
+        }
+    }
+
 	// Use this for initialization
 	void Start ()
     {
@@ -107,7 +120,7 @@ public class SchedulingManager : Manager<SchedulingManager>
             steakerDic.Add(schedule.Type, objs[i]);
         }
 
-        timeRate = 1f / 2f; // 1일은 48초
+        timeRate = 2f; // 1일은 12초
         progressing = false;
 
         if(preOneToTwelve == null || preThirteenToTwentyFour == null ||
@@ -161,6 +174,7 @@ public class SchedulingManager : Manager<SchedulingManager>
         obj.transform.localScale = Vector3.one;
         obj.GetComponent<ObjectFollower>().Other = steakers.transform;
 
+        steakerList.Clear();
         var dic = GameManager.Instance.SchedulesDic;
 
         int i = 0;
@@ -195,7 +209,7 @@ public class SchedulingManager : Manager<SchedulingManager>
 
         int useLength = steakerList[0].Count * 50 + (steakerList[0].Count - 1) * 70;
 
-        group.padding.top = (678 - useLength) / 2;
+        group.padding.top = (528 - useLength) / 2;
     }
 
     //
@@ -241,6 +255,14 @@ public class SchedulingManager : Manager<SchedulingManager>
         time += Time.smoothDeltaTime * timeRate;
         if(time >= 24)
         {
+            if(gotoMainReserved)
+            {
+                gotoMainReserved = false;
+                progressing = false;
+
+                GameManager.Instance.CloseSchedulePopup();
+            }
+
             curTime = 1;
             befTime = 0;
             Date date = GameManager.Instance.GameDate;
