@@ -17,12 +17,22 @@ public class UIManager : Manager<UIManager>
     private EscObserver observer = null;
     private Dictionary<string, List<Image>> layersDic;
 
+    public override void Init()
+    {
+        Start();
+
+        base.Init();
+    }
+
     // Use this for initialization
     void Start ()
     {
-        canvas = FindObjectOfType<Canvas>();
-        observer = FindObjectOfType<EscObserver>();
-        layersDic = new Dictionary<string, List<Image>>();
+        if(!IsInited)
+        {
+            canvas = FindObjectOfType<Canvas>();
+            observer = FindObjectOfType<EscObserver>();
+            layersDic = new Dictionary<string, List<Image>>();
+        }
 	}
 	
     override public void OnLevelWasLoaded(int level)
