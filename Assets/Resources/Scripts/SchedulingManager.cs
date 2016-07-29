@@ -60,11 +60,29 @@ public class SchedulingManager : Manager<SchedulingManager>
     private const int STEAKER_LIMIT = 10;
     int curSteakerPlate = 0;
 
+    [SerializeField]
+    private GameObject preStudyMethodPopup = null;
+    private GameObject studyMethodPopup = null;
+
+    private int studyMode = 1;
+    public int StudyMode
+    {
+        get
+        {
+            return studyMode;
+        }
+        set
+        {
+            studyMode = value;
+        }
+    }
+
 	// Use this for initialization
 	void Start ()
     {
         scheduleDic = new Dictionary<ScheduleType, GameObject>();
         steakerDic = new Dictionary<ScheduleType, GameObject>();
+        steakerList = new List<List<SteakerInfo>>();
 
         GameObject[] objs = Resources.LoadAll<GameObject>("Prefabs/Schedules/Acts/");
         
@@ -92,7 +110,8 @@ public class SchedulingManager : Manager<SchedulingManager>
         progressing = false;
 
         if(preOneToTwelve == null || preThirteenToTwentyFour == null ||
-            preSteakerPlate == null || preSteakerButton == null)
+            preSteakerPlate == null || preSteakerButton == null ||
+            preStudyMethodPopup == null)
         {
             Debug.LogWarning("The Prefab NOT PREPARED");
         }
@@ -414,5 +433,25 @@ public class SchedulingManager : Manager<SchedulingManager>
         {
             Debug.LogWarning("Can't Move Steaker");
         }
+    }
+
+    public void OpenStudyMethodPopup()
+    {
+        studyMethodPopup = Instantiate(preStudyMethodPopup);
+        studyMethodPopup.transform.parent = UIManager.Instance.Canvas.transform;
+        studyMethodPopup.transform.localPosition = Vector3.zero;
+        studyMethodPopup.transform.localScale = Vector3.one;
+
+        UIManager.Instance.SetEnableTouchLayer("Main", false);
+        UIManager.Instance.SetEnableTouchLayer("Steaker", false);
+    }
+
+    public void CloseStudyMethodPopup()
+    {
+        Destroy(studyMethodPopup);
+        studyMethodPopup = null;
+
+        UIManager.Instance.SetEnableTouchLayer("Main", true);
+        UIManager.Instance.SetEnableTouchLayer("Steaker", true);
     }
 }

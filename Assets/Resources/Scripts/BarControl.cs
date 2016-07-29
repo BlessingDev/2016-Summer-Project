@@ -5,9 +5,20 @@ using System.Collections;
 public class BarControl : MonoBehaviour {
 
     [SerializeField]
-    private Mask mMask = null;
+    private Transform scaleTransform = null;
     [SerializeField]
     private int mOriginalValue = 100;
+    public int OriginalValue
+    {
+        get
+        {
+            return mOriginalValue;
+        }
+        set
+        {
+            mOriginalValue = value;
+        }
+    }
     [SerializeField]
     private int mCurVal = 100;
 
@@ -17,8 +28,8 @@ public class BarControl : MonoBehaviour {
 	// Use this for initialization
 	void Start ()
     {
-        if (mMask == null)
-            this.enabled = false;
+        if (scaleTransform == null)
+            enabled = false;
 	}
 	
     public void SetValue(int val)
@@ -39,7 +50,7 @@ public class BarControl : MonoBehaviour {
 
         while(true)
         {
-            Vector3 scale = mMask.transform.localScale;
+            Vector3 scale = scaleTransform.localScale;
 
             bool endCheck = (val < 0) ? (scale.x <= targetScale) : (scale.x >= targetScale);
             if (endCheck)
@@ -51,7 +62,7 @@ public class BarControl : MonoBehaviour {
 
             scale.x += val * Time.smoothDeltaTime;
 
-            mMask.transform.localScale = scale;
+            scaleTransform.localScale = scale;
 
             yield return null;
         }
