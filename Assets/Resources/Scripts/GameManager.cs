@@ -199,6 +199,7 @@ public class GameManager : Manager<GameManager>
         if (!pause)
         {
             SchedulingManager.Instance.update();
+            EventManager.Instance.update();
             UIManager.Instance.update();
         }
     }
