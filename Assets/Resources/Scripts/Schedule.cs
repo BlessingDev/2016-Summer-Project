@@ -5,7 +5,8 @@ public enum ScheduleType
 {
     TakeARest,
     English,
-    BasicMath
+    BasicMath,
+    Korean
 }
 
 public abstract class Schedule : MonoBehaviour
@@ -19,22 +20,34 @@ public abstract class Schedule : MonoBehaviour
         }
     }
 
-    private bool ended;
-    public bool IsEnded
+    private bool limited = false;       // 편집 제한된 스케줄인가
+    public bool IsLimited
     {
         get
         {
-            return ended;
+            return limited;
+        }
+        set
+        {
+            Debug.Log("limited is Changed");
+            limited = value;
         }
     }
+
+    private bool inited = false;
 
 	// Use this for initialization
 	protected void Start()
     {
+        if(!inited)
+            Init();
         DontDestroyOnLoad(this);
 	}
 
-    public abstract void TypeInit();
+    public virtual void Init()
+    {
+        inited = true;
+    }
 
     public abstract void Effect(Schedule obj);
 }

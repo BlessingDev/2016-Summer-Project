@@ -20,7 +20,11 @@ public class BarControl : MonoBehaviour {
         }
     }
     [SerializeField]
-    private int mCurVal = 100;
+    private float mCurVal = 100;
+    [SerializeField]
+    private Transform barTransform = null;
+    [SerializeField]
+    private bool vertical = true;
 
     private bool mIsMoving = false;         // 현재 코루틴을 통한 바 갱신이 진행 중인가?
     private float mSpeed = 0.3f;             // 바가 갱신되는 스피드
@@ -29,16 +33,54 @@ public class BarControl : MonoBehaviour {
 	void Start ()
     {
         if (scaleTransform == null)
+        {
             enabled = false;
-	}
+            Debug.LogError("scaleTransform is NULL");
+        }
+    }
 	
-    public void SetValue(int val)
+    public void SetValue(float val)
     {
         if(!mIsMoving)
             StartCoroutine(UpdateBar(mCurVal, val));
     }
 
-    private IEnumerator UpdateBar(int from, int to)
+    public void SetValueImmediately(float val)
+    {
+        if (val > mOriginalValue)
+            val = mOriginalValue;
+        else if (val < 0)
+            val = 0;
+
+        float targetScale = val / mOriginalValue;
+        Vector3 scale = scaleTransform.transform.localScale;
+        if(vertical)
+        {
+            scale.y = targetScale;
+        }
+        else
+        {
+            scale.x = targetScale;
+        }
+        scaleTransform.transform.localScale = scale;
+
+        if(barTransform != null)
+        {
+            float resciprocalScale = mOriginalValue / val;
+            scale = barTransform.localScale;
+            if (vertical)
+            {
+                scale.y = targetScale;
+            }
+            else
+            {
+                scale.x = targetScale;
+            }
+            barTransform.localScale = scale;
+        }
+    }
+
+    private IEnumerator UpdateBar(float from, float to)
     {
         mIsMoving = true;
         float val = mSpeed;
@@ -52,7 +94,13 @@ public class BarControl : MonoBehaviour {
         {
             Vector3 scale = scaleTransform.localScale;
 
-            bool endCheck = (val < 0) ? (scale.x <= targetScale) : (scale.x >= targetScale);
+            float curVal = 0f;
+            if (vertical)
+                curVal = scale.y;
+            else
+                curVal = scale.x;
+
+            bool endCheck = (val < 0) ? (curVal <= targetScale) : (curVal >= targetScale);
             if (endCheck)
             {
                 mIsMoving = false;
@@ -60,7 +108,10 @@ public class BarControl : MonoBehaviour {
                 break;
             }
 
-            scale.x += val * Time.smoothDeltaTime;
+            if (vertical)
+                scale.y += val * Time.smoothDeltaTime;
+            else
+                scale.x += val * Time.smoothDeltaTime;
 
             scaleTransform.localScale = scale;
 

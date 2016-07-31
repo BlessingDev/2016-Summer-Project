@@ -13,6 +13,7 @@ public class SchedulingManager : Manager<SchedulingManager>
 {
     private Dictionary<ScheduleType, GameObject> scheduleDic;
     private Dictionary<ScheduleType, GameObject> steakerDic;
+    private Dictionary<ParameterCategory, GameObject> parameters;
     private List<List<SteakerInfo>> steakerList;
     private Schedule[] scheduleList;
     private int curTime = 1;
@@ -58,7 +59,7 @@ public class SchedulingManager : Manager<SchedulingManager>
     private SteakerPlate steakers;
 
     private int curPlace = 1;
-    private const int STEAKER_LIMIT = 10;
+    private const int STEAKER_LIMIT = 5;
     int curSteakerPlate = 0;
 
     [SerializeField]
@@ -97,13 +98,14 @@ public class SchedulingManager : Manager<SchedulingManager>
         scheduleDic = new Dictionary<ScheduleType, GameObject>();
         steakerDic = new Dictionary<ScheduleType, GameObject>();
         steakerList = new List<List<SteakerInfo>>();
+        parameters = new Dictionary<ParameterCategory, GameObject>();
 
         GameObject[] objs = Resources.LoadAll<GameObject>("Prefabs/Schedules/Acts/");
         
         for(int i = 0; i < objs.Length; i += 1)
         {
             Schedule schedule = objs[i].GetComponent<Schedule>();
-            schedule.TypeInit();
+            schedule.Init();
             scheduleDic.Add(schedule.Type, objs[i]);
         }
 
@@ -120,7 +122,14 @@ public class SchedulingManager : Manager<SchedulingManager>
             steakerDic.Add(schedule.Type, objs[i]);
         }
 
-        timeRate = 2f; // 1일은 12초
+        objs = Resources.LoadAll<GameObject>("Prefabs/Parameters/");
+        for(int i = 0; i < objs.Length; i += 1)
+        {
+            ParameterBar bar = objs[i].GetComponent<ParameterBar>();
+            parameters.Add(bar.Category, bar.gameObject);
+        }
+
+        timeRate = 3f; // 1일은 8초
         progressing = false;
 
         if(preOneToTwelve == null || preThirteenToTwentyFour == null ||
@@ -296,6 +305,11 @@ public class SchedulingManager : Manager<SchedulingManager>
     void SetCutSceneAnimation()
     {
         GameManager.Instance.SetCutSceneAnimation(scheduleList[curTime - 1].Type);
+    }
+
+    void SetParameterBar()
+    {
+
     }
 
     public ScheduleType GetTypeAt(int time)

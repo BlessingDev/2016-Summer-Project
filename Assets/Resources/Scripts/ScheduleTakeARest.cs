@@ -4,17 +4,10 @@ using System;
 
 public class ScheduleTakeARest : Schedule
 {
-
-	// Use this for initialization
-	new void Start ()
+    public override void Init()
     {
-        base.Start();
+        base.Init();
         type = ScheduleType.TakeARest;
-	}
-
-    public override void TypeInit()
-    {
-        Start();
     }
 
     public override void Effect(Schedule obj)

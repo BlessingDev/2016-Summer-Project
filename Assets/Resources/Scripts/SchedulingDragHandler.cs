@@ -51,8 +51,11 @@ public class SchedulingDragHandler : MonoBehaviour
             moveObj.transform.parent = startParent;
             moveObj.transform.localScale = Vector3.one;
             moveObj.GetComponent<UnityEngine.UI.Image>().SetNativeSize();
+            Destroy(moveObj.transform.GetChild(0).gameObject);
             draggingItem = moveObj;
             moveObj.GetComponent<SchedulingDragHandler>().oriHandler = this;
+            if(steaker.Num > 0)
+                steaker.Num -= 1;
         }
     }
 
@@ -72,14 +75,9 @@ public class SchedulingDragHandler : MonoBehaviour
             GetComponent<CanvasGroup>().blocksRaycasts = true;
             if (moveObj.transform.parent == startParent)
             {
+                if(steaker.Num > 0)
+                    steaker.Num += 1;
                 Destroy(moveObj);
-            }
-            else
-            {
-                if (steaker.Num > 0)
-                {
-                    steaker.Num -= 1;
-                }
             }
             moveObj = null;
         }

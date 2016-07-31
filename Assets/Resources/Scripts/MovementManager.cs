@@ -42,5 +42,8 @@ public class MovementManager : Manager<MovementManager>
             return false;
     }
 
+    void FindPath(Vector2 pos)
+    {
 
+    }
 }
