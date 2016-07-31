@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 public enum ScheduleType
 {
@@ -17,6 +17,14 @@ public abstract class Schedule : MonoBehaviour
         get
         {
             return type;
+        }
+    }
+    protected List<ParameterCategory> categories = new List<ParameterCategory>();
+    public List<ParameterCategory> Categories
+    {
+        get
+        {
+            return categories;
         }
     }
 

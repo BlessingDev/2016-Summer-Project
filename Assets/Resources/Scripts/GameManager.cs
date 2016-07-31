@@ -161,12 +161,8 @@ public class GameManager : Manager<GameManager>
 
     private bool executeSchedule = false;       // 스케쥴 실행이 예약되어 있는가
     [SerializeField]
-    private GameObject preSchedulePopup = null;
-    private GameObject schedulePopup = null;
-    [SerializeField]
     private GameObject prePausePopup = null;
     private GameObject pausePopup = null;
-    private Animator cutSceneAnimator = null;
 
 	// Use this for initialization
 	void Start()
@@ -181,7 +177,7 @@ public class GameManager : Manager<GameManager>
         parameters = new Dictionary<string, float>();
 
         parameters.Add("Stress", 0);
-        parameters.Add("BasicMath1", 0);
+        parameters.Add("Math", 0);
         parameters.Add("English", 0);
 
         parameterLimit = new Dictionary<string, int>();
@@ -192,7 +188,7 @@ public class GameManager : Manager<GameManager>
         gameDate.Month = 1;
         gameDate.Day = 1;
 
-        if(preSchedulePopup == null || prePausePopup == null)
+        if(prePausePopup == null)
         {
             Debug.LogWarning("The Prefab NOT PREPARED");
         }
@@ -219,14 +215,8 @@ public class GameManager : Manager<GameManager>
                 {
                     executeSchedule = false;
 
-                    schedulePopup = Instantiate(preSchedulePopup);
-                    schedulePopup.transform.parent = UIManager.Instance.Canvas.transform;
-                    schedulePopup.transform.localPosition = new Vector2(-150, -20);
-                    schedulePopup.transform.localScale = Vector3.one;
+                    SchedulingManager.Instance.OpenSchedulePopup();
 
-                    GameObject obj = schedulePopup.transform.GetChild(0).gameObject;
-                    var ani = obj.GetComponent<Animator>();
-                    cutSceneAnimator = ani;
 
                     SchedulingManager.Instance.Progressing = true;
                 }
@@ -309,32 +299,8 @@ public class GameManager : Manager<GameManager>
         pausePopup = null;
     }
 
-    public void SetCutSceneAnimation(ScheduleType type)
+    public void GameOver()
     {
-        if(cutSceneAnimator == null)
-        {
-            Debug.LogError("Animator is NULL");
-            return;
-        }
 
-        int aniType = 0;
-        switch(type)
-        {
-            case ScheduleType.TakeARest:
-                aniType = 1;
-                break;
-            case ScheduleType.BasicMath:
-            case ScheduleType.English:
-                aniType = 2;
-                break;
-        }
-
-        cutSceneAnimator.SetInteger("AnimationType", aniType);
-    }
-
-    public void CloseSchedulePopup()
-    {
-        Destroy(schedulePopup);
-        schedulePopup = null;
     }
 }

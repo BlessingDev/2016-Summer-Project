@@ -4,7 +4,6 @@ using UnityEngine.EventSystems;
 
 public class Steaker : MonoBehaviour
 {
-    [SerializeField]
     private int num = 0;
     public int Num
     {

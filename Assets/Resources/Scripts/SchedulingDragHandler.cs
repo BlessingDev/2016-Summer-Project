@@ -61,7 +61,7 @@ public class SchedulingDragHandler : MonoBehaviour
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (steaker.Num > 0 || steaker.Num == -1)
+        if (moveObj != null)
         {
             moveObj.transform.position = Input.mousePosition;
         }

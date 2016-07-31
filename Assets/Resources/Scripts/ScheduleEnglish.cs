@@ -8,6 +8,8 @@ public class ScheduleEnglish : Schedule
     {
         base.Init();
         type = ScheduleType.English;
+        categories.Add(ParameterCategory.Stress);
+        categories.Add(ParameterCategory.English);
     }
 
     public override void Effect(Schedule obj)

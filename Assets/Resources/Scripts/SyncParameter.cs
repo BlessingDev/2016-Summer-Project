@@ -19,10 +19,12 @@ public class SyncParameter : MonoBehaviour
         }
 
         float check = GameManager.Instance.GetParameter(parameterName);
-	}
-	
-	// Update is called once per frame
-	void Update ()
+
+        bar.SetValueImmediately(GameManager.Instance.GetParameter(parameterName));
+    }
+
+    // Update is called once per frame
+    void Update ()
     {
         bar.SetValueImmediately(GameManager.Instance.GetParameter(parameterName));
 	}

@@ -8,6 +8,7 @@ public class ScheduleTakeARest : Schedule
     {
         base.Init();
         type = ScheduleType.TakeARest;
+        categories.Add(ParameterCategory.Stress);
     }
 
     public override void Effect(Schedule obj)

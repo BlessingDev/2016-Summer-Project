@@ -5,13 +5,20 @@ public class SchedulePopup : MonoBehaviour
 {
     [SerializeField]
     GameObject parameters;
+    [SerializeField]
+    Animator animator;
 
-	// Use this for initialization
-	void Start ()
+    // Use this for initialization
+    void Start()
     {
-	    if(parameters == null)
+        if (parameters == null)
         {
             Debug.LogError("parameters not ready");
+            enabled = false;
+        }
+        if (animator == null)
+        {
+            Debug.LogError("animator not ready");
             enabled = false;
         }
 	}
@@ -20,14 +27,19 @@ public class SchedulePopup : MonoBehaviour
     {
         for(int i = 0; i < parameters.transform.childCount; i += 1)
         {
-            var obj = parameters.transform.GetChild(i);
-            Destroy(obj);
+            Transform obj = parameters.transform.GetChild(i);
+            Destroy(obj.gameObject);
         }
     }
 
     public void AddParameter(GameObject obj)
     {
         obj.transform.SetParent(parameters.transform);
-        obj.transform.localScale = Vector3.one;
+        obj.transform.localScale = new Vector3(0.7f, 0.7f, 1);
+    }
+
+    public void SetAnimationType(int type)
+    {
+        animator.SetInteger("AnimationType", type);
     }
 }

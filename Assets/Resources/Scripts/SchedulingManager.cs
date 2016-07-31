@@ -41,6 +41,7 @@ public class SchedulingManager : Manager<SchedulingManager>
             befTime = 0;
             time = 0;
             SetCutSceneAnimation();
+            SetParameterBar();
             progressing = value;
         }
     }
@@ -92,8 +93,12 @@ public class SchedulingManager : Manager<SchedulingManager>
         }
     }
 
-	// Use this for initialization
-	void Start ()
+    [SerializeField]
+    private GameObject preSchedulePopup = null;
+    private SchedulePopup schedulePopup = null;
+
+    // Use this for initialization
+    void Start ()
     {
         scheduleDic = new Dictionary<ScheduleType, GameObject>();
         steakerDic = new Dictionary<ScheduleType, GameObject>();
@@ -134,7 +139,7 @@ public class SchedulingManager : Manager<SchedulingManager>
 
         if(preOneToTwelve == null || preThirteenToTwentyFour == null ||
             preSteakerPlate == null || preSteakerButton == null ||
-            preStudyMethodPopup == null)
+            preStudyMethodPopup == null || preSchedulePopup == null)
         {
             Debug.LogWarning("The Prefab NOT PREPARED");
         }
@@ -269,7 +274,7 @@ public class SchedulingManager : Manager<SchedulingManager>
                 gotoMainReserved = false;
                 progressing = false;
 
-                GameManager.Instance.CloseSchedulePopup();
+                CloseSchedulePopup();
             }
 
             curTime = 1;
@@ -299,17 +304,45 @@ public class SchedulingManager : Manager<SchedulingManager>
 
             curTime += 1;
             SetCutSceneAnimation();
+            SetParameterBar();
         }
     }
 
     void SetCutSceneAnimation()
     {
-        GameManager.Instance.SetCutSceneAnimation(scheduleList[curTime - 1].Type);
+        int aniType = 0;
+        switch (scheduleList[curTime - 1].Type)
+        {
+            case ScheduleType.TakeARest:
+                aniType = 1;
+                break;
+            case ScheduleType.BasicMath:
+            case ScheduleType.English:
+                aniType = 2;
+                break;
+        }
+
+        schedulePopup.SetAnimationType(aniType);
     }
 
     void SetParameterBar()
     {
-
+        schedulePopup.InitParameters();
+        var list = scheduleList[curTime - 1].Categories;
+        foreach(var iter in list)
+        {
+            GameObject obj;
+            if(parameters.TryGetValue(iter, out obj))
+            {
+                obj = Instantiate(obj);
+                schedulePopup.AddParameter(obj);
+            }
+            else
+            {
+                Debug.LogError(iter + " is NOT found");
+                return;
+            }
+        }
     }
 
     public ScheduleType GetTypeAt(int time)
@@ -501,5 +534,21 @@ public class SchedulingManager : Manager<SchedulingManager>
 
         UIManager.Instance.SetEnableTouchLayer("Main", true);
         UIManager.Instance.SetEnableTouchLayer("Steaker", true);
+    }
+
+    public void OpenSchedulePopup()
+    {
+        GameObject obj = Instantiate(preSchedulePopup);
+        obj.transform.parent = UIManager.Instance.Canvas.transform;
+        obj.transform.localPosition = new Vector2(-150, -20);
+        obj.transform.localScale = Vector3.one;
+
+        schedulePopup = obj.GetComponent<SchedulePopup>();
+    }
+
+    public void CloseSchedulePopup()
+    {
+        Destroy(schedulePopup.gameObject);
+        schedulePopup = null;
     }
 }
