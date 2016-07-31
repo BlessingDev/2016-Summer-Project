@@ -28,6 +28,15 @@ public abstract class Schedule : MonoBehaviour
         }
     }
 
+    protected bool ratable;
+    public bool IsRatable
+    {
+        get
+        {
+            return ratable;
+        }
+    }
+
     private bool limited = false;       // 편집 제한된 스케줄인가
     public bool IsLimited
     {
@@ -58,4 +67,9 @@ public abstract class Schedule : MonoBehaviour
     }
 
     public abstract void Effect(Schedule obj);
+
+    public virtual void Failed()
+    {
+        Debug.LogWarning("Schedule.Failed Called");
+    }
 }

@@ -7,6 +7,7 @@ public class ScheduleBasicMath1 : Schedule
     public override void Init()
     {
         type = ScheduleType.BasicMath;
+        ratable = true;
         categories.Add(ParameterCategory.Stress);
         categories.Add(ParameterCategory.Math);
     }
@@ -15,6 +16,16 @@ public class ScheduleBasicMath1 : Schedule
     {
         GameManager.Instance.SetParameter("Stress", GameManager.Instance.GetParameter("Stress") + 1);
         GameManager.Instance.SetParameter("Math", GameManager.Instance.GetParameter("Math") + 1);
+        SchedulingManager.Instance.ShowChangeText(ParameterCategory.Stress, 1);
+        SchedulingManager.Instance.ShowChangeText(ParameterCategory.Math, 1);
+
         Debug.Log("Math Effected!");
+    }
+
+    public override void Failed()
+    {
+        GameManager.Instance.SetParameter("Stress",
+           GameManager.Instance.GetParameter("Stress") + 1);
+        SchedulingManager.Instance.ShowChangeText(ParameterCategory.Math, 1);
     }
 }

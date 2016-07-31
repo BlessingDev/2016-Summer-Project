@@ -66,15 +66,18 @@ public class BarControl : MonoBehaviour {
 
         if(barTransform != null)
         {
-            float resciprocalScale = mOriginalValue / val;
+            float resciprocalScale = 1 / targetScale;
+            if (targetScale == 0)
+                resciprocalScale = 1;
+
             scale = barTransform.localScale;
             if (vertical)
             {
-                scale.y = targetScale;
+                scale.y = resciprocalScale;
             }
             else
             {
-                scale.x = targetScale;
+                scale.x = resciprocalScale;
             }
             barTransform.localScale = scale;
         }

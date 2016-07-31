@@ -11,10 +11,19 @@ public struct SteakerInfo
 
 public class SchedulingManager : Manager<SchedulingManager>
 {
-    private Dictionary<ScheduleType, GameObject> scheduleDic;
-    private Dictionary<ScheduleType, GameObject> steakerDic;
+    private Dictionary<ScheduleType, GameObject> preScheduleDic;
+    private Dictionary<ScheduleType, GameObject> preSteakerDic;
+    private Dictionary<ParameterCategory, GameObject> preParameters;
     private Dictionary<ParameterCategory, GameObject> parameters;
     private List<List<SteakerInfo>> steakerList;
+    private Dictionary<ScheduleType, GameObject> curSteakerDic;
+    public Dictionary<ScheduleType, GameObject> CurSteakerDic
+    {
+        get
+        {
+            return curSteakerDic;
+        }
+    }
     private Schedule[] scheduleList;
     private int curTime = 1;
     private float befTime = 1;
@@ -97,13 +106,16 @@ public class SchedulingManager : Manager<SchedulingManager>
     private GameObject preSchedulePopup = null;
     private SchedulePopup schedulePopup = null;
 
+    [SerializeField]
+    private GameObject preChangeNumber = null;
+
     // Use this for initialization
     void Start ()
     {
-        scheduleDic = new Dictionary<ScheduleType, GameObject>();
-        steakerDic = new Dictionary<ScheduleType, GameObject>();
+        preScheduleDic = new Dictionary<ScheduleType, GameObject>();
+        preSteakerDic = new Dictionary<ScheduleType, GameObject>();
         steakerList = new List<List<SteakerInfo>>();
-        parameters = new Dictionary<ParameterCategory, GameObject>();
+        preParameters = new Dictionary<ParameterCategory, GameObject>();
 
         GameObject[] objs = Resources.LoadAll<GameObject>("Prefabs/Schedules/Acts/");
         
@@ -111,7 +123,7 @@ public class SchedulingManager : Manager<SchedulingManager>
         {
             Schedule schedule = objs[i].GetComponent<Schedule>();
             schedule.Init();
-            scheduleDic.Add(schedule.Type, objs[i]);
+            preScheduleDic.Add(schedule.Type, objs[i]);
         }
 
         scheduleList = new Schedule[24];
@@ -124,14 +136,14 @@ public class SchedulingManager : Manager<SchedulingManager>
         for (int i = 0; i < objs.Length; i += 1)
         {
             SchedulingDragHandler schedule = objs[i].GetComponent<SchedulingDragHandler>();
-            steakerDic.Add(schedule.Type, objs[i]);
+            preSteakerDic.Add(schedule.Type, objs[i]);
         }
 
         objs = Resources.LoadAll<GameObject>("Prefabs/Parameters/");
         for(int i = 0; i < objs.Length; i += 1)
         {
             ParameterBar bar = objs[i].GetComponent<ParameterBar>();
-            parameters.Add(bar.Category, bar.gameObject);
+            preParameters.Add(bar.Category, bar.gameObject);
         }
 
         timeRate = 3f; // 1일은 8초
@@ -139,7 +151,8 @@ public class SchedulingManager : Manager<SchedulingManager>
 
         if(preOneToTwelve == null || preThirteenToTwentyFour == null ||
             preSteakerPlate == null || preSteakerButton == null ||
-            preStudyMethodPopup == null || preSchedulePopup == null)
+            preStudyMethodPopup == null || preSchedulePopup == null ||
+            preChangeNumber == null)
         {
             Debug.LogWarning("The Prefab NOT PREPARED");
         }
@@ -152,7 +165,7 @@ public class SchedulingManager : Manager<SchedulingManager>
         switch(level)
         {
             case 1:
-                GameObject obj= Instantiate<GameObject>(preOneToTwelve);
+                GameObject obj = Instantiate<GameObject>(preOneToTwelve);
                 obj.transform.parent = UIManager.Instance.Canvas.transform;
                 obj.transform.localScale = Vector3.one;
                 obj.transform.localPosition = new Vector2(-320, 0);
@@ -175,6 +188,7 @@ public class SchedulingManager : Manager<SchedulingManager>
 
     void MakeSteakerBook()
     {
+        curSteakerDic = new Dictionary<ScheduleType, GameObject>();
         steakers = Instantiate(preSteakerPlate).GetComponent<SteakerPlate>();
         GridLayoutGroup group = steakers.GetComponent<GridLayoutGroup>();
 
@@ -207,13 +221,15 @@ public class SchedulingManager : Manager<SchedulingManager>
 
         for (int j = 0; j < steakerList[0].Count; j += 1)
         {
-            if (steakerDic.TryGetValue(steakerList[0][j].type, out obj))
+            if (preSteakerDic.TryGetValue(steakerList[0][j].type, out obj))
             {
-                GameObject ste = Instantiate(obj);
-                ste.transform.parent = steakers.transform;
-                ste.transform.localScale = Vector3.one;
+                GameObject steObj = Instantiate(obj);
+                steObj.transform.parent = steakers.transform;
+                steObj.transform.localScale = Vector3.one;
 
-                ste.GetComponent<Steaker>().Num = steakerList[0][j].num;
+                Steaker ste = steObj.GetComponent<Steaker>();
+                ste.Num = steakerList[0][j].num;
+                curSteakerDic.Add(steakerList[0][j].type, steObj);
             }
             else
             {
@@ -243,7 +259,7 @@ public class SchedulingManager : Manager<SchedulingManager>
         }
 
         GameObject obj = null;
-        if(scheduleDic.TryGetValue(type, out obj))
+        if(preScheduleDic.TryGetValue(type, out obj))
         {
             GameObject ins = Instantiate<GameObject>(obj);
 
@@ -293,14 +309,7 @@ public class SchedulingManager : Manager<SchedulingManager>
         if(time - befTime >= 1.0f)
         {
             befTime = time;
-            try
-            {
-                scheduleList[curTime - 1].Effect(scheduleList[curTime - 1]);
-            }
-            catch(UnityException exc)
-            {
-                Debug.LogError(exc.Message + " at SchedulingManager.ScheduleUpdate1");
-            }
+            ScheduleExecute();
 
             curTime += 1;
             SetCutSceneAnimation();
@@ -327,15 +336,17 @@ public class SchedulingManager : Manager<SchedulingManager>
 
     void SetParameterBar()
     {
+        parameters = new Dictionary<ParameterCategory, GameObject>();
         schedulePopup.InitParameters();
         var list = scheduleList[curTime - 1].Categories;
         foreach(var iter in list)
         {
             GameObject obj;
-            if(parameters.TryGetValue(iter, out obj))
+            if(preParameters.TryGetValue(iter, out obj))
             {
                 obj = Instantiate(obj);
                 schedulePopup.AddParameter(obj);
+                parameters.Add(iter, obj);
             }
             else
             {
@@ -396,7 +407,7 @@ public class SchedulingManager : Manager<SchedulingManager>
             if (scheduleList[time - 1])
             {
                 GameObject obj = null;
-                if(steakerDic.TryGetValue(scheduleList[time - 1].Type, out obj))
+                if(preSteakerDic.TryGetValue(scheduleList[time - 1].Type, out obj))
                 {
                     return Instantiate<GameObject>(obj);
                 }
@@ -452,6 +463,8 @@ public class SchedulingManager : Manager<SchedulingManager>
     {
         if(curSteakerPlate < steakerList.Count - 1)
         {
+            curSteakerDic = new Dictionary<ScheduleType, GameObject>();
+
             for(int i = 0; i < steakers.transform.childCount; i += 1)
             {
                 Destroy(steakers.transform.GetChild(i).gameObject);
@@ -462,13 +475,15 @@ public class SchedulingManager : Manager<SchedulingManager>
             GameObject obj;
             for(int i = 0; i < steakerList[curSteakerPlate].Count; i += 1)
             {
-                if (steakerDic.TryGetValue(steakerList[curSteakerPlate][i].type, out obj))
+                if (preSteakerDic.TryGetValue(steakerList[curSteakerPlate][i].type, out obj))
                 {
-                    GameObject ste = Instantiate(obj);
-                    ste.transform.parent = steakers.transform;
-                    ste.transform.localScale = Vector3.one;
+                    GameObject steObj = Instantiate(obj);
+                    steObj.transform.parent = steakers.transform;
+                    steObj.transform.localScale = Vector3.one;
 
-                    ste.GetComponent<Steaker>().Num = steakerList[curSteakerPlate][i].num;
+                    Steaker ste = steObj.GetComponent<Steaker>();
+                    ste.Num = steakerList[curSteakerPlate][i].num;
+                    curSteakerDic.Add(steakerList[curSteakerPlate][i].type, steObj);
                 }
                 else
                 {
@@ -486,6 +501,8 @@ public class SchedulingManager : Manager<SchedulingManager>
     {
         if(curSteakerPlate > 1)
         {
+            curSteakerDic = new Dictionary<ScheduleType, GameObject>();
+
             for (int i = 0; i < steakers.transform.childCount; i += 1)
             {
                 Destroy(steakers.transform.GetChild(i).gameObject);
@@ -496,13 +513,15 @@ public class SchedulingManager : Manager<SchedulingManager>
             GameObject obj;
             for (int i = 0; i < steakerList[curSteakerPlate].Count; i += 1)
             {
-                if (steakerDic.TryGetValue(steakerList[curSteakerPlate][i].type, out obj))
+                if (preSteakerDic.TryGetValue(steakerList[curSteakerPlate][i].type, out obj))
                 {
-                    GameObject ste = Instantiate(obj);
-                    ste.transform.parent = steakers.transform;
-                    ste.transform.localScale = Vector3.one;
+                    GameObject steObj = Instantiate(obj);
+                    steObj.transform.parent = steakers.transform;
+                    steObj.transform.localScale = Vector3.one;
 
-                    ste.GetComponent<Steaker>().Num = steakerList[curSteakerPlate][i].num;
+                    Steaker ste = steObj.GetComponent<Steaker>();
+                    ste.Num = steakerList[curSteakerPlate][i].num;
+                    curSteakerDic.Add(steakerList[curSteakerPlate][i].type, steObj);
                 }
                 else
                 {
@@ -550,5 +569,87 @@ public class SchedulingManager : Manager<SchedulingManager>
     {
         Destroy(schedulePopup.gameObject);
         schedulePopup = null;
+    }
+
+    // 스케줄이 성공했는지 검사하고 후속 조치를 취한다.
+    public void ScheduleExecute()
+    {
+        if(scheduleList[curTime - 1].IsRatable)
+        {
+            float percentage = 100 - GameManager.Instance.GetParameter("Stress");
+
+            float val = Random.value * 100;
+
+            if (val <= percentage)
+            {
+                scheduleList[curTime - 1].Effect(scheduleList[curTime - 1]);
+                Debug.Log("Schedule Succed");
+            }
+            else
+            {
+                scheduleList[curTime - 1].Failed();
+                Debug.Log("Schedule Failed");
+            }
+        }
+        else
+        {
+            scheduleList[curTime - 1].Effect(scheduleList[curTime - 1]);
+        }
+    }
+
+    public bool ShowChangeText(ParameterCategory category, float val)
+    {
+        if(parameters.ContainsKey(category))
+        {
+            GameObject obj;
+            parameters.TryGetValue(category, out obj);
+            GameObject text = Instantiate(preChangeNumber);
+            text.transform.SetParent(UIManager.Instance.Canvas.transform);
+            text.transform.localScale = Vector3.one;
+            string numText = (val >= 0) ? "+" + val.ToString() : val.ToString();
+            text.GetComponent<Text>().text = numText;
+            text.transform.GetChild(0).GetComponent<Text>().text = numText;
+
+            text.transform.position = obj.transform.position;
+            text.transform.localPosition = new Vector2(text.transform.localPosition.x, text.transform.localPosition.y + 60);
+
+            StartCoroutine(CorChangeVal(text, category));
+            return true;
+        }
+        else
+        {
+            Debug.LogWarning(category + " parameter DOESN'T EXIST");
+            return false;
+        }
+    }
+
+    private IEnumerator CorChangeVal(GameObject obj, ParameterCategory category)
+    {
+        Text text = obj.GetComponent<Text>();
+        Color color = text.color;
+        color.a = 0;
+        text.color = color;
+
+        float alphaSpeed = 1f;
+        float ySpeed = 10f;
+
+        while(true)
+        {
+            color = text.color;
+            color.a += alphaSpeed * Time.smoothDeltaTime;
+            text.color = color;
+
+            if(color.a >= 1f || !parameters.ContainsKey(category))
+            {
+                Destroy(obj);
+                break;
+            }
+
+            Vector2 pos = obj.transform.localPosition;
+            pos.y += ySpeed * Time.smoothDeltaTime;
+            obj.transform.localPosition = pos;
+
+            yield return null;
+        }
     }
 }

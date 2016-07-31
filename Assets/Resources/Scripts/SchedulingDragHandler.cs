@@ -15,12 +15,19 @@ public class SchedulingDragHandler : MonoBehaviour
         {
             return oriHandler;
         }
+        set
+        {
+            oriHandler = value;
+        }
     }
     private Steaker steaker;
     public Steaker Steaker
     {
         get
         {
+            if (steaker == null)
+                steaker = GetComponent<Steaker>();
+
             return steaker;
         }
     }
@@ -35,8 +42,12 @@ public class SchedulingDragHandler : MonoBehaviour
         }
     }
 
+    static int staticObjNum = 0;
+    private int objNum;
+
     void Start()
     {
+        objNum = staticObjNum++;
         steaker = GetComponent<Steaker>();
     }
 
@@ -69,13 +80,13 @@ public class SchedulingDragHandler : MonoBehaviour
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (steaker.Num > 0 || steaker.Num == -1)
+        if (draggingItem != null)
         {
             draggingItem = null;
             GetComponent<CanvasGroup>().blocksRaycasts = true;
             if (moveObj.transform.parent == startParent)
             {
-                if(steaker.Num > 0)
+                if(steaker.Num >= 0)
                     steaker.Num += 1;
                 Destroy(moveObj);
             }
