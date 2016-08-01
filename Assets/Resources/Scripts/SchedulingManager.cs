@@ -336,7 +336,11 @@ public class SchedulingManager : Manager<SchedulingManager>
                 break;
             case ScheduleType.BasicMath:
             case ScheduleType.English:
+            case ScheduleType.Korean:
                 aniType = 2;
+                break;
+            case ScheduleType.Volunteer:
+                aniType = 3;
                 break;
         }
 
@@ -653,6 +657,20 @@ public class SchedulingManager : Manager<SchedulingManager>
             obj.transform.localPosition = pos;
 
             yield return null;
+        }
+    }
+
+    public void SetSteakerInfoNum(ScheduleType type, int num)
+    {
+        for(int i = 0; i < steakerList[curSteakerPlate].Count; i += 1)
+        {
+            if(steakerList[curSteakerPlate][i].type == type)
+            {
+                var info = steakerList[curSteakerPlate][i];
+                info.num = num;
+                steakerList[curSteakerPlate][i] = info;
+                return;
+            }
         }
     }
 }

@@ -4,6 +4,9 @@ using UnityEngine.EventSystems;
 
 public class Steaker : MonoBehaviour
 {
+    [SerializeField]
+    ScheduleType type;   
+
     private int num = 0;
     public int Num
     {
@@ -16,6 +19,7 @@ public class Steaker : MonoBehaviour
             if(num != -1)
             {
                 num = value;
+                SchedulingManager.Instance.SetSteakerInfoNum(type, value);
             }
         }
     }
