@@ -130,6 +130,13 @@ public class ShopManager : Manager<ShopManager>
 
     public void Use()
     {
-        GameManager.Instance.SetSkinName(shopType, selectedSkinName);
+        if(shopType < SkinType.Costume)
+        {
+            GameManager.Instance.SetSkinName(shopType, selectedSkinName);
+        }
+        else
+        {
+            GameManager.Instance.CostumeCode = int.Parse(selectedSkinName);
+        }
     }
 }

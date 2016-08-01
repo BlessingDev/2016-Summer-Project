@@ -176,6 +176,17 @@ public class GameManager : Manager<GameManager>
     private Dictionary<string, List<Animator>> animationLayer;
     private Dictionary<string, Sprite>[] preSkinSpriteDic;
     private int curCostumeCode;
+    public int CostumeCode
+    {
+        get
+        {
+            return curCostumeCode;
+        }
+        set
+        {
+            curCostumeCode = value;
+        }
+    }
     private string[] curSkinNames;
 
 	// Use this for initialization
