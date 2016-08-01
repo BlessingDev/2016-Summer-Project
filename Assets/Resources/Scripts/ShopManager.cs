@@ -30,16 +30,18 @@ public class ShopManager : Manager<ShopManager>
         }
     }
 
-    private int shopNum = 0;        // 어떤 등급의 제품을 선택중인지
-    public int ShopNum
+    private string selectedSkinName;
+    public string SelectedSkinName
     {
         get
         {
-            return shopNum;
+            return selectedSkinName;
         }
         set
         {
-            shopNum = value;
+            RefreshExplanation();
+            RefreshIcon();
+            selectedSkinName = value;
         }
     }
 
@@ -114,5 +116,20 @@ public class ShopManager : Manager<ShopManager>
 
         Destroy(shopPopup);
         shopPopup = null;
+    }
+
+    public void RefreshExplanation()
+    {
+
+    }
+
+    public void RefreshIcon()
+    {
+
+    }
+
+    public void Use()
+    {
+        GameManager.Instance.SetSkinName(shopType, selectedSkinName);
     }
 }

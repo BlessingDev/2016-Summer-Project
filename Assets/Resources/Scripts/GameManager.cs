@@ -174,7 +174,9 @@ public class GameManager : Manager<GameManager>
     private GameObject pausePopup = null;
 
     private Dictionary<string, List<Animator>> animationLayer;
-    private Dictionary<SkinType, Dictionary<string, Sprite>> skinSpriteDic;
+    private Dictionary<string, Sprite>[] preSkinSpriteDic;
+    private int curCostumeCode;
+    private string[] curSkinNames;
 
 	// Use this for initialization
 	void Start()
@@ -188,7 +190,7 @@ public class GameManager : Manager<GameManager>
 
         parameters = new Dictionary<string, float>();
 
-        parameters.Add("Stress", 60);
+        parameters.Add("Stress", 0);
         parameters.Add("Math", 0);
         parameters.Add("English", 0);
 
@@ -197,6 +199,26 @@ public class GameManager : Manager<GameManager>
         parameterLimit.Add("Stress", 100);
 
         animationLayer = new Dictionary<string, List<Animator>>();
+        preSkinSpriteDic = new Dictionary<string, Sprite>[4];
+        curSkinNames = new string[4];
+        curCostumeCode = 0;
+
+        for(int i = 1; i <= 4; i += 1)
+        {
+            Dictionary<string, Sprite> preSprite = new Dictionary<string, Sprite>();
+            Sprite[] sprites = Resources.LoadAll<Sprite>("Sprites/Skin/" + ((SkinType)i).ToString() + "/");
+            for (int j = 0; j < sprites.Length; j += 1)
+            {
+                preSprite.Add(sprites[j].name, sprites[j]);
+            }
+
+            preSkinSpriteDic[i - 1] = preSprite;
+        }
+
+        curSkinNames[(int)SkinType.Bed - 1] = "Map_Bed";
+        curSkinNames[(int)SkinType.Desk - 1] = "Map_Desk";
+        curSkinNames[(int)SkinType.Floor - 1] = "normal_floor";
+        curSkinNames[(int)SkinType.Wall - 1] = "normal_wallpaper";
 
         gameDate.Year = 1;
         gameDate.Month = 3;
@@ -372,8 +394,28 @@ public class GameManager : Manager<GameManager>
         }
     }
 
+    public void SetSkinName(SkinType type, string name)
+    {
+        curSkinNames[(int)type - 1] = name;
+    }
+
+    public Sprite GetAppropriateSkin(SkinType type)
+    {
+        Sprite sprite;
+        if(preSkinSpriteDic[(int)type - 1]
+            .TryGetValue(curSkinNames[(int)type - 1], out sprite))
+        {
+            return sprite;
+        }
+        else
+        {
+            Debug.LogError("Coundn't FIND Sprite" + curSkinNames[(int)type - 1]);
+            return null;
+        }
+    } 
+
     public void GameOver()
     {
-        Debug.Log("Game Overed");
+        Debug.LogError("Game Overed");
     }
 }
