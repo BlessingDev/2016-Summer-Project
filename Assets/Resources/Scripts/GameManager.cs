@@ -164,6 +164,8 @@ public class GameManager : Manager<GameManager>
     private GameObject prePausePopup = null;
     private GameObject pausePopup = null;
 
+    private Dictionary<string, List<Animator>> animationLayer;
+
 	// Use this for initialization
 	void Start()
     {
@@ -176,7 +178,7 @@ public class GameManager : Manager<GameManager>
 
         parameters = new Dictionary<string, float>();
 
-        parameters.Add("Stress", 0);
+        parameters.Add("Stress", 60);
         parameters.Add("Math", 0);
         parameters.Add("English", 0);
 
@@ -184,9 +186,11 @@ public class GameManager : Manager<GameManager>
 
         parameterLimit.Add("Stress", 100);
 
+        animationLayer = new Dictionary<string, List<Animator>>();
+
         gameDate.Year = 1;
-        gameDate.Month = 1;
-        gameDate.Day = 1;
+        gameDate.Month = 3;
+        gameDate.Day = 2;
 
         if(prePausePopup == null)
         {
@@ -201,6 +205,7 @@ public class GameManager : Manager<GameManager>
             SchedulingManager.Instance.update();
             EventManager.Instance.update();
             UIManager.Instance.update();
+            CheckGameOver();
         }
     }
 
@@ -208,6 +213,7 @@ public class GameManager : Manager<GameManager>
     {
         base.OnLevelWasLoaded(level);
 
+        animationLayer = new Dictionary<string, List<Animator>>();
         UIManager.Instance.OnLevelWasLoaded(level);
         switch (level)
         {
@@ -222,6 +228,14 @@ public class GameManager : Manager<GameManager>
                     SchedulingManager.Instance.Progressing = true;
                 }
                 break;
+        }
+    }
+
+    private void CheckGameOver()
+    {
+        if(gameDate.Year == 4 && gameDate.Month == 2 && gameDate.Day == 15)
+        {
+            GameOver();
         }
     }
 
@@ -289,6 +303,11 @@ public class GameManager : Manager<GameManager>
         pausePopup.transform.parent = UIManager.Instance.Canvas.transform;
         pausePopup.transform.localPosition = Vector3.zero;
         pausePopup.transform.localScale = Vector3.one;
+
+        SetPlayAnimator("Player", false);
+
+        if (SchedulingManager.Instance.Progressing)
+            SetPlayAnimator("CutScene", false);
     }
 
     public void ResumeGame()
@@ -298,10 +317,53 @@ public class GameManager : Manager<GameManager>
 
         Destroy(pausePopup);
         pausePopup = null;
+
+        SetPlayAnimator("Player", true);
+
+        if (SchedulingManager.Instance.Progressing)
+            SetPlayAnimator("CutScene", true);
+    }
+
+    public void AddAnimator(string layerName, Animator animator)
+    {
+        if(animationLayer.ContainsKey(layerName))
+        {
+            List<Animator> list;
+            animationLayer.TryGetValue(layerName, out list);
+            list.Add(animator);
+            animationLayer.Remove(layerName);
+            animationLayer.Add(layerName, list);
+        }
+        else
+        {
+            List<Animator> list = new List<Animator>();
+            list.Add(animator);
+            animationLayer.Add(layerName, list);
+        }
+    }
+
+    public bool SetPlayAnimator(string layerName, bool play)
+    {
+        if(animationLayer.ContainsKey(layerName))
+        {
+            List<Animator> list;
+            animationLayer.TryGetValue(layerName, out list);
+            foreach(var iter in list)
+            {
+                iter.enabled = play;
+            }
+
+            return true;
+        }
+        else
+        {
+            Debug.LogWarning(layerName + " layer DOESN'T EXIST");
+            return false;
+        }
     }
 
     public void GameOver()
     {
-
+        Debug.Log("Game Overed");
     }
 }

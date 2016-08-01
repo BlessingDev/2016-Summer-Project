@@ -626,20 +626,14 @@ public class SchedulingManager : Manager<SchedulingManager>
     private IEnumerator CorChangeVal(GameObject obj, ParameterCategory category)
     {
         Text text = obj.GetComponent<Text>();
-        Color color = text.color;
-        color.a = 0;
-        text.color = color;
-
-        float alphaSpeed = 1f;
         float ySpeed = 10f;
+        float time = 0;
 
         while(true)
         {
-            color = text.color;
-            color.a += alphaSpeed * Time.smoothDeltaTime;
-            text.color = color;
+            time += Time.smoothDeltaTime;
 
-            if(color.a >= 1f || !parameters.ContainsKey(category))
+            if(time >= 0.3f || !parameters.ContainsKey(category))
             {
                 Destroy(obj);
                 break;

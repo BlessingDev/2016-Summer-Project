@@ -26,6 +26,6 @@ public class ScheduleBasicMath1 : Schedule
     {
         GameManager.Instance.SetParameter("Stress",
            GameManager.Instance.GetParameter("Stress") + 1);
-        SchedulingManager.Instance.ShowChangeText(ParameterCategory.Math, 1);
+        SchedulingManager.Instance.ShowChangeText(ParameterCategory.Stress, 1);
     }
 }
