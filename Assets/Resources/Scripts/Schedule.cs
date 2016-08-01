@@ -6,7 +6,11 @@ public enum ScheduleType
     TakeARest,
     English,
     BasicMath,
-    Korean
+    Korean,
+    Science,
+    Social,
+    Volunteer,
+    Parttime
 }
 
 public abstract class Schedule : MonoBehaviour

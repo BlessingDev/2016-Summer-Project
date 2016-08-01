@@ -10,7 +10,8 @@ public enum ParameterCategory
     Korean,
     Science,
     Social,
-    Stress
+    Stress,
+    Volunteer
 }
 
 public class ParameterBar : BarControl

@@ -189,6 +189,13 @@ public class GameManager : Manager<GameManager>
         }
     }
     private string[] curSkinNames;
+    public string[] CurSkinNames
+    {
+        get
+        {
+            return curSkinNames;
+        }
+    }
 
     [SerializeField]
     private GameObject preStatPopup = null;
@@ -203,6 +210,9 @@ public class GameManager : Manager<GameManager>
         schedulesDic.Add(ScheduleType.TakeARest, -1);
         schedulesDic.Add(ScheduleType.BasicMath, 8);
         schedulesDic.Add(ScheduleType.English, 8);
+        schedulesDic.Add(ScheduleType.Korean, 8);
+        schedulesDic.Add(ScheduleType.Volunteer, 8);
+
 
         parameters = new Dictionary<string, float>();
 
@@ -210,10 +220,14 @@ public class GameManager : Manager<GameManager>
         parameters.Add("Math", 0);
         parameters.Add("English", 0);
         parameters.Add("Korean", 0);
+        parameters.Add("Science", 0);
+        parameters.Add("Social", 0);
+        parameters.Add("Volunteer", 0);
 
         parameterLimit = new Dictionary<string, int>();
 
         parameterLimit.Add("Stress", 100);
+        parameterLimit.Add("Volunteer", 100);
 
         animationLayer = new Dictionary<string, List<Animator>>();
         preSkinSpriteDic = new Dictionary<string, Sprite>[4];

@@ -69,7 +69,7 @@ public class SchedulingManager : Manager<SchedulingManager>
     private SteakerPlate steakers;
 
     private int curPlace = 1;
-    private const int STEAKER_LIMIT = 5;
+    private const int STEAKER_LIMIT = 4;
     int curSteakerPlate = 0;
 
     [SerializeField]
@@ -109,6 +109,8 @@ public class SchedulingManager : Manager<SchedulingManager>
     [SerializeField]
     private GameObject preChangeNumber = null;
 
+    private Dictionary<string, Sprite> preSchedulingBack = null;
+
     // Use this for initialization
     void Start ()
     {
@@ -144,6 +146,13 @@ public class SchedulingManager : Manager<SchedulingManager>
         {
             ParameterBar bar = objs[i].GetComponent<ParameterBar>();
             preParameters.Add(bar.Category, bar.gameObject);
+        }
+
+        preSchedulingBack = new Dictionary<string, Sprite>();
+        var sprites = Resources.LoadAll<Sprite>("Sprites/ScheduleUI/Background/");
+        for(int i = 0; i < sprites.Length; i += 1)
+        {
+            preSchedulingBack.Add(sprites[i].name, sprites[i]);
         }
 
         timeRate = 3f; // 1일은 8초
@@ -499,7 +508,7 @@ public class SchedulingManager : Manager<SchedulingManager>
 
     public void SteakerPlateBackward()
     {
-        if(curSteakerPlate > 1)
+        if(curSteakerPlate >= 1)
         {
             curSteakerDic = new Dictionary<ScheduleType, GameObject>();
 
