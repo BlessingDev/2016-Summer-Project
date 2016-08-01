@@ -4,7 +4,7 @@ using System.Collections;
 public class OpenShopPopup : MonoBehaviour
 {
     [SerializeField]
-    private int shopType = 0;
+    private SkinType shopType = 0;
 
     public void OnClick()
     {

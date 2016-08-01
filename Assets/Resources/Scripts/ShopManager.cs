@@ -14,11 +14,11 @@ public class ShopManager : Manager<ShopManager>
         }
     }
 
-    private Dictionary<int, GameObject[]> shoppingList;
+    private Dictionary<SkinType, GameObject[]> shoppingList;
     private ScaleEffecter[] effecters = null;
 
-    private int shopType = 0;       // 어떤 종류의 제품을 구입할건지
-    public int ShopType
+    private SkinType shopType = 0;       // 어떤 종류의 제품을 구입할건지
+    public SkinType ShopType
     {
         get
         {
@@ -54,12 +54,12 @@ public class ShopManager : Manager<ShopManager>
     {
         if(!IsInited)
         {
-            shoppingList = new Dictionary<int, GameObject[]>();
+            shoppingList = new Dictionary<SkinType, GameObject[]>();
 
             for (int i = 1; i <= 5; i += 1)
             {
-                var objs = Resources.LoadAll<GameObject>("Prefabs/Shop/" + i.ToString() + "/");
-                shoppingList.Add(i, objs);
+                var objs = Resources.LoadAll<GameObject>("Prefabs/Shop/" + ((SkinType)i).ToString() + "/");
+                shoppingList.Add((SkinType)i, objs);
             }
 
             effecters = FindObjectsOfType<ScaleEffecter>();
@@ -71,7 +71,7 @@ public class ShopManager : Manager<ShopManager>
         }
     }
 
-    public void OpenShopPopup(int shopType)
+    public void OpenShopPopup(SkinType shopType)
     {
         this.shopType = shopType;
 

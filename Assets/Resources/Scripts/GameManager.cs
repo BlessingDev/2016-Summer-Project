@@ -93,6 +93,15 @@ public struct Date
     }
 }
 
+public enum SkinType
+{
+    Desk = 1,
+    Bed,
+    Wall,
+    Floor,
+    Costume
+}
+
 public class GameManager : Manager<GameManager>
 {
 
@@ -165,6 +174,7 @@ public class GameManager : Manager<GameManager>
     private GameObject pausePopup = null;
 
     private Dictionary<string, List<Animator>> animationLayer;
+    private Dictionary<SkinType, Dictionary<string, Sprite>> skinSpriteDic;
 
 	// Use this for initialization
 	void Start()
