@@ -24,4 +24,14 @@ public class ParameterBar : BarControl
             return category;
         }
     }
+
+    [SerializeField]
+    private Transform barEnd;
+    public Transform BarEnd
+    {
+        get
+        {
+            return barEnd;
+        }
+    }
 }

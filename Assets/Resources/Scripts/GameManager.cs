@@ -148,6 +148,7 @@ public class GameManager : Manager<GameManager>
         }
     }
 
+    private GameObject prePlayer = null;
     private GameObject player = null;
     public GameObject Player
     {
@@ -189,6 +190,10 @@ public class GameManager : Manager<GameManager>
     }
     private string[] curSkinNames;
 
+    [SerializeField]
+    private GameObject preStatPopup = null;
+    private GameObject statPopup = null;
+
 	// Use this for initialization
 	void Start()
     {
@@ -204,6 +209,7 @@ public class GameManager : Manager<GameManager>
         parameters.Add("Stress", 0);
         parameters.Add("Math", 0);
         parameters.Add("English", 0);
+        parameters.Add("Korean", 0);
 
         parameterLimit = new Dictionary<string, int>();
 
@@ -235,7 +241,7 @@ public class GameManager : Manager<GameManager>
         gameDate.Month = 3;
         gameDate.Day = 2;
 
-        if(prePausePopup == null)
+        if(prePausePopup == null || preStatPopup == null)
         {
             Debug.LogWarning("The Prefab NOT PREPARED");
         }
@@ -424,6 +430,20 @@ public class GameManager : Manager<GameManager>
             return null;
         }
     } 
+
+    public void OpenStatPopup()
+    {
+        statPopup = Instantiate(preStatPopup);
+        statPopup.transform.SetParent(UIManager.Instance.Canvas.transform);
+        statPopup.transform.localScale = Vector3.one;
+        statPopup.transform.localPosition = Vector3.zero;
+    }
+
+    public void CloseStatPopup()
+    {
+        Destroy(statPopup);
+        statPopup = null;
+    }
 
     public void GameOver()
     {
