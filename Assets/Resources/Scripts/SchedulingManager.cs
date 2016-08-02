@@ -222,27 +222,25 @@ public class SchedulingManager : Manager<SchedulingManager>
             info.type = iter.Key;
             info.num = iter.Value;
 
-            steakerList[i / STEAKER_LIMIT].Add(info);
-
-            i += 1;
-        }
-
-        for (int j = 0; j < steakerList[0].Count; j += 1)
-        {
-            if (preSteakerDic.TryGetValue(steakerList[0][j].type, out obj))
+            if (preSteakerDic.TryGetValue(info.type, out obj))
             {
                 GameObject steObj = Instantiate(obj);
-                steObj.transform.parent = steakers.transform;
+                if (i / STEAKER_LIMIT == 0)
+                    steObj.transform.parent = steakers.transform;
                 steObj.transform.localScale = Vector3.one;
 
                 Steaker ste = steObj.GetComponent<Steaker>();
-                ste.Num = steakerList[0][j].num;
-                curSteakerDic.Add(steakerList[0][j].type, steObj);
+                ste.Num = info.num;
+                curSteakerDic.Add(info.type, steObj);
             }
             else
             {
                 Debug.LogError("The Schedule DOESN'T EXIST");
             }
+
+            steakerList[i / STEAKER_LIMIT].Add(info);
+
+            i += 1;
         }
 
         int useLength = steakerList[0].Count * 50 + (steakerList[0].Count - 1) * 70;
@@ -475,11 +473,11 @@ public class SchedulingManager : Manager<SchedulingManager>
     {
         if(curSteakerPlate < steakerList.Count - 1)
         {
-            curSteakerDic = new Dictionary<ScheduleType, GameObject>();
+            GridLayoutGroup group = steakers.GetComponent<GridLayoutGroup>();
 
-            for(int i = 0; i < steakers.transform.childCount; i += 1)
+            for(int i = 0; i < steakerList[curSteakerPlate].Count; i += 1)
             {
-                Destroy(steakers.transform.GetChild(i).gameObject);
+                steakers.transform.GetChild(0).transform.SetParent(null);
             }
 
             curSteakerPlate += 1;
@@ -487,21 +485,20 @@ public class SchedulingManager : Manager<SchedulingManager>
             GameObject obj;
             for(int i = 0; i < steakerList[curSteakerPlate].Count; i += 1)
             {
-                if (preSteakerDic.TryGetValue(steakerList[curSteakerPlate][i].type, out obj))
+                if (curSteakerDic.TryGetValue(steakerList[curSteakerPlate][i].type, out obj))
                 {
-                    GameObject steObj = Instantiate(obj);
-                    steObj.transform.parent = steakers.transform;
-                    steObj.transform.localScale = Vector3.one;
-
-                    Steaker ste = steObj.GetComponent<Steaker>();
-                    ste.Num = steakerList[curSteakerPlate][i].num;
-                    curSteakerDic.Add(steakerList[curSteakerPlate][i].type, steObj);
+                    obj.transform.parent = steakers.transform;
+                    obj.transform.localScale = Vector3.one;
                 }
                 else
                 {
                     Debug.LogError("The Schedule DOESN'T EXIST");
                 }
             }
+
+            int useLength = steakerList[curSteakerPlate].Count * 50 + (steakerList[curSteakerPlate].Count - 1) * 70;
+
+            group.padding.top = (528 - useLength) / 2;
         }
         else
         {
@@ -513,11 +510,11 @@ public class SchedulingManager : Manager<SchedulingManager>
     {
         if(curSteakerPlate >= 1)
         {
-            curSteakerDic = new Dictionary<ScheduleType, GameObject>();
+            GridLayoutGroup group = steakers.GetComponent<GridLayoutGroup>();
 
-            for (int i = 0; i < steakers.transform.childCount; i += 1)
+            for (int i = 0; i < steakerList[curSteakerPlate].Count; i += 1)
             {
-                Destroy(steakers.transform.GetChild(i).gameObject);
+                steakers.transform.GetChild(0).transform.SetParent(null);
             }
 
             curSteakerPlate -= 1;
@@ -525,21 +522,20 @@ public class SchedulingManager : Manager<SchedulingManager>
             GameObject obj;
             for (int i = 0; i < steakerList[curSteakerPlate].Count; i += 1)
             {
-                if (preSteakerDic.TryGetValue(steakerList[curSteakerPlate][i].type, out obj))
+                if (curSteakerDic.TryGetValue(steakerList[curSteakerPlate][i].type, out obj))
                 {
-                    GameObject steObj = Instantiate(obj);
-                    steObj.transform.parent = steakers.transform;
-                    steObj.transform.localScale = Vector3.one;
-
-                    Steaker ste = steObj.GetComponent<Steaker>();
-                    ste.Num = steakerList[curSteakerPlate][i].num;
-                    curSteakerDic.Add(steakerList[curSteakerPlate][i].type, steObj);
+                    obj.transform.parent = steakers.transform;
+                    obj.transform.localScale = Vector3.one;
                 }
                 else
                 {
                     Debug.LogError("The Schedule DOESN'T EXIST");
                 }
             }
+
+            int useLength = steakerList[curSteakerPlate].Count * 50 + (steakerList[curSteakerPlate].Count - 1) * 70;
+
+            group.padding.top = (528 - useLength) / 2;
         }
         else
         {
@@ -595,16 +591,19 @@ public class SchedulingManager : Manager<SchedulingManager>
             if (val <= percentage)
             {
                 scheduleList[curTime - 1].Effect(scheduleList[curTime - 1]);
+                schedulePopup.ShowFailOrSuccess(true);
                 Debug.Log("Schedule Succed");
             }
             else
             {
                 scheduleList[curTime - 1].Failed();
+                schedulePopup.ShowFailOrSuccess(false);
                 Debug.Log("Schedule Failed");
             }
         }
         else
         {
+            schedulePopup.DisappearFailOrSuccess();
             scheduleList[curTime - 1].Effect(scheduleList[curTime - 1]);
         }
     }
@@ -662,15 +661,14 @@ public class SchedulingManager : Manager<SchedulingManager>
 
     public void SetSteakerInfoNum(ScheduleType type, int num)
     {
-        for(int i = 0; i < steakerList[curSteakerPlate].Count; i += 1)
+        GameObject obj;
+        if(curSteakerDic.TryGetValue(type, out obj))
         {
-            if(steakerList[curSteakerPlate][i].type == type)
-            {
-                var info = steakerList[curSteakerPlate][i];
-                info.num = num;
-                steakerList[curSteakerPlate][i] = info;
-                return;
-            }
+            obj.GetComponent<Steaker>().Num = num;
+        }
+        else
+        {
+            Debug.LogWarning("The Steaker Doesn't Exist");
         }
     }
 }

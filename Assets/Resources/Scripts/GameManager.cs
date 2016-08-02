@@ -201,6 +201,22 @@ public class GameManager : Manager<GameManager>
     private GameObject preStatPopup = null;
     private GameObject statPopup = null;
 
+    int money = 0;
+    public int Money
+    {
+        get
+        {
+            return money;
+        }
+        set
+        {
+            if (value < 0)
+                money = 0;
+            else
+                money = value;
+        }
+    }
+
 	// Use this for initialization
 	void Start()
     {

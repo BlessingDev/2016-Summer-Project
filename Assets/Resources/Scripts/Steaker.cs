@@ -19,7 +19,6 @@ public class Steaker : MonoBehaviour
             if(num != -1)
             {
                 num = value;
-                SchedulingManager.Instance.SetSteakerInfoNum(type, value);
             }
         }
     }

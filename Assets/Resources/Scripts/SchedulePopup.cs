@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class SchedulePopup : MonoBehaviour
 {
@@ -7,6 +8,12 @@ public class SchedulePopup : MonoBehaviour
     GameObject parameters;
     [SerializeField]
     Animator animator;
+    [SerializeField]
+    private Image failOrSuccess;
+    private Sprite fail;
+    private Sprite success;
+    private bool reserved = false;
+
 
     // Use this for initialization
     void Start()
@@ -21,7 +28,16 @@ public class SchedulePopup : MonoBehaviour
             Debug.LogError("animator not ready");
             enabled = false;
         }
-	}
+        if (failOrSuccess == null)
+        {
+            Debug.LogError("fail or success not ready");
+            enabled = false;
+        }
+
+        failOrSuccess.enabled = false;
+        fail = Resources.Load<Sprite>("Sprites/ScheduleUI/fail");
+        success = Resources.Load<Sprite>("Sprites/ScheduleUI/Success");
+    }
 
     public void InitParameters()
     {
@@ -41,5 +57,34 @@ public class SchedulePopup : MonoBehaviour
     public void SetAnimationType(int type)
     {
         animator.SetInteger("AnimationType", type);
+    }
+
+    public void ShowFailOrSuccess(bool success)
+    {
+        failOrSuccess.enabled = true;
+        if(success)
+        {
+            failOrSuccess.sprite = this.success;
+        }
+        else
+        {
+            failOrSuccess.sprite = fail;
+        }
+
+    }
+
+    public void DisappearFailOrSuccess()
+    {
+        if(!reserved)
+            StartCoroutine(CorDisappearFailOrSuccess());
+    }
+
+    IEnumerator CorDisappearFailOrSuccess()
+    {
+        reserved = true;
+        yield return new WaitForSeconds(0.15f);
+
+        failOrSuccess.enabled = false;
+        reserved = false;
     }
 }
