@@ -106,10 +106,10 @@ public class SchedulingManager : Manager<SchedulingManager>
     private GameObject preSchedulePopup = null;
     private SchedulePopup schedulePopup = null;
 
-    [SerializeField]
-    private GameObject preChangeNumber = null;
-
     private Dictionary<string, Sprite> preSchedulingBack = null;
+
+    [SerializeField]
+    private GameObject preChangeNum = null;
 
     // Use this for initialization
     void Start ()
@@ -160,8 +160,7 @@ public class SchedulingManager : Manager<SchedulingManager>
 
         if(preOneToTwelve == null || preThirteenToTwentyFour == null ||
             preSteakerPlate == null || preSteakerButton == null ||
-            preStudyMethodPopup == null || preSchedulePopup == null ||
-            preChangeNumber == null)
+            preStudyMethodPopup == null || preSchedulePopup == null)
         {
             Debug.LogWarning("The Prefab NOT PREPARED");
         }
@@ -616,12 +615,13 @@ public class SchedulingManager : Manager<SchedulingManager>
         {
             GameObject obj;
             parameters.TryGetValue(category, out obj);
-            GameObject text = Instantiate(preChangeNumber);
+            GameObject text = Instantiate(preChangeNum);
             text.transform.SetParent(UIManager.Instance.Canvas.transform);
             text.transform.localScale = Vector3.one;
             string numText = (val >= 0) ? "+" + val.ToString() : val.ToString();
-            text.GetComponent<Text>().text = numText;
-            text.transform.GetChild(0).GetComponent<Text>().text = numText;
+            CustomNumberText cusText = text.GetComponent<CustomNumberText>();
+            cusText.Text = numText;
+            cusText.Alignment = TextAlignment.Center;
 
             text.transform.position = obj.transform.position;
             text.transform.localPosition = new Vector2(text.transform.localPosition.x, text.transform.localPosition.y + 60);
