@@ -5,12 +5,12 @@ public class ShopManager : Manager<ShopManager>
 {
     [SerializeField]
     private GameObject preShopPopup = null;
-    private GameObject shopPopup = null;
+    private ShopPopup shopPopup = null;
     public GameObject ShopPopup
     {
         get
         {
-            return shopPopup;
+            return shopPopup.gameObject;
         }
     }
 
@@ -39,11 +39,15 @@ public class ShopManager : Manager<ShopManager>
         }
         set
         {
+            selectedSkinName = value;
             RefreshExplanation();
             RefreshIcon();
-            selectedSkinName = value;
+            CheckButton();
         }
     }
+
+    private Dictionary<SkinType, Dictionary<string, int>> priceDic;
+    private Dictionary<SkinType, Dictionary<string, bool>> buyCheck;
 
     public override void Init()
     {
@@ -56,12 +60,32 @@ public class ShopManager : Manager<ShopManager>
     {
         if(!IsInited)
         {
+            priceDic = new Dictionary<SkinType, Dictionary<string, int>>();
+            buyCheck = new Dictionary<SkinType, Dictionary<string, bool>>();
             shoppingList = new Dictionary<SkinType, GameObject[]>();
 
             for (int i = 1; i <= 5; i += 1)
             {
                 var objs = Resources.LoadAll<GameObject>("Prefabs/Shop/" + ((SkinType)i).ToString() + "/");
                 shoppingList.Add((SkinType)i, objs);
+
+                if((SkinType)i != SkinType.Costume)
+                {
+                    Dictionary<string, bool> checkDic = new Dictionary<string, bool>();
+                    Dictionary<string, int> priceNameDic = new Dictionary<string, int>();
+                    for (int j = 0; j < objs.Length; j += 1)
+                    {
+                        ShopSlot slot = objs[j].GetComponent<ShopSlot>();
+                        slot.GetSpriteName();
+                        // 세이브 기능 구현시 고쳐야 할 부분
+                        checkDic.Add(slot.SpriteName, false);
+
+                        priceNameDic.Add(slot.SpriteName, slot.Price);
+                    }
+
+                    buyCheck.Add((SkinType)i, checkDic);
+                    priceDic.Add((SkinType)i, priceNameDic);
+                }
             }
 
             effecters = FindObjectsOfType<ScaleEffecter>();
@@ -83,7 +107,7 @@ public class ShopManager : Manager<ShopManager>
             effecters[i].enabled = false;
         }
 
-        shopPopup = Instantiate(preShopPopup);
+        shopPopup = Instantiate(preShopPopup).GetComponent<ShopPopup>();
         shopPopup.transform.parent = UIManager.Instance.Canvas.transform;
         shopPopup.transform.localPosition = Vector3.zero;
         shopPopup.transform.localScale = Vector3.one;
@@ -114,7 +138,7 @@ public class ShopManager : Manager<ShopManager>
             effecters[i].enabled = true;
         }
 
-        Destroy(shopPopup);
+        Destroy(shopPopup.gameObject);
         shopPopup = null;
     }
 
@@ -126,6 +150,60 @@ public class ShopManager : Manager<ShopManager>
     public void RefreshIcon()
     {
 
+    }
+
+    public void CheckButton()
+    {
+        Dictionary<string, bool> checkDic;
+        buyCheck.TryGetValue(shopType, out checkDic);
+        bool check;
+        if(checkDic.TryGetValue(selectedSkinName, out check))
+        {
+            if(check)
+            {
+                shopPopup.Bought();
+            }
+            else
+            {
+                shopPopup.NotBought();
+            }
+        }
+        else
+        {
+            Debug.LogError("Could not FIND name " + selectedSkinName);
+        }
+    }
+
+    public void Purchase()
+    {
+        Dictionary<string, int> priceNameDic;
+        priceDic.TryGetValue(shopType, out priceNameDic);
+        int price;
+        if (priceNameDic.TryGetValue(selectedSkinName, out price))
+        {
+            if(price <= GameManager.Instance.Money)
+            {
+                GameManager.Instance.Money -= price;
+
+                Dictionary<string, bool> checkDic;
+                buyCheck.TryGetValue(shopType, out checkDic);
+                if (checkDic.ContainsKey(selectedSkinName))
+                {
+                    checkDic.Remove(selectedSkinName);
+                    checkDic.Add(selectedSkinName, true);
+                }
+                else
+                {
+                    Debug.LogError("Could not FIND name " + selectedSkinName);
+                }
+
+                shopPopup.Bought();
+            }
+        }
+        else
+        {
+            Debug.LogError("Could not FIND name " + selectedSkinName);
+        }
     }
 
     public void Use()

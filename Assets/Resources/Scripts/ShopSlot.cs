@@ -5,11 +5,30 @@ using UnityEngine.UI;
 public class ShopSlot : MonoBehaviour
 {
     private string spriteName;
-
-	// Use this for initialization
-	void Start ()
+    public string SpriteName
     {
-	    if(transform.childCount == 0)
+        get
+        {
+            return spriteName;
+        }
+    }
+
+    [SerializeField]
+    private int price = 0;
+    public int Price
+    {
+        get
+        {
+            return price;
+        }
+    }
+
+    private bool inited = false;
+
+    public void GetSpriteName()
+    {
+        inited = true;
+        if (transform.childCount == 0)
         {
             Debug.LogError("This Slot DOESN'T HAVE Child");
             enabled = false;
@@ -17,7 +36,7 @@ public class ShopSlot : MonoBehaviour
         }
 
         var sprite = transform.GetChild(0).GetComponent<Image>();
-        if(sprite == null)
+        if (sprite == null)
         {
             Debug.LogError("This Slot DOESN'T HAVE Sprite Child");
             enabled = false;
@@ -25,7 +44,15 @@ public class ShopSlot : MonoBehaviour
         }
 
         spriteName = sprite.sprite.name;
-	}
+    }
+
+    void Start()
+    {
+        if(!inited)
+        {
+            GetSpriteName();
+        }
+    }
 
     public void OnClick()
     {
