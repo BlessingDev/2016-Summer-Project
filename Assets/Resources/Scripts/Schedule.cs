@@ -32,7 +32,7 @@ public abstract class Schedule : MonoBehaviour
         }
     }
 
-    protected bool ratable;
+    protected bool ratable;             // 실패나 성공이 존재하는가
     public bool IsRatable
     {
         get
@@ -41,17 +41,17 @@ public abstract class Schedule : MonoBehaviour
         }
     }
 
-    private bool limited = false;       // 편집 제한된 스케줄인가
-    public bool IsLimited
+    private bool removable = false;       // 편집 제한된 스케줄인가
+    public bool IsRemovable
     {
         get
         {
-            return limited;
+            return removable;
         }
         set
         {
             Debug.Log("limited is Changed");
-            limited = value;
+            removable = value;
         }
     }
 
