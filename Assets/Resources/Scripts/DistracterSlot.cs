@@ -18,5 +18,6 @@ public class DistracterSlot : MonoBehaviour
 
     public void OnClick()
     {
+        ConversationManager.Instance.DistracterSelected(distracterNum);
     }
 }
