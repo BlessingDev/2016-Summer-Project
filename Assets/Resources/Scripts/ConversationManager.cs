@@ -68,9 +68,6 @@ public class ConversationManager : Manager<ConversationManager>
         talkerText.transform.SetParent(UIManager.Instance.Canvas.transform);
         talkerText.transform.localPosition = new Vector2(-396, -116);
         talkerText.transform.localScale = Vector3.one;
-
-        ParseConvFile("Interview_Basic");
-        ShowText();
 	}
 
     public override void OnLevelWasLoaded(int level)
@@ -305,4 +302,6 @@ public class ConversationManager : Manager<ConversationManager>
         convDatas.Clear();
         curConvIndex = 0;
     }
+
+
 }
