@@ -38,6 +38,7 @@ public class ConversationManager : Manager<ConversationManager>
     private GameObject preDistracterButton = null;
     private int curDistracterCode;
     private string[] curDistracterLinks;
+    private string curEventBasicPath;
 
 	// Use this for initialization
 	void Start ()
@@ -92,7 +93,8 @@ public class ConversationManager : Manager<ConversationManager>
 
     public void ParseConvFile(string fileName)
     {
-        string fileData = FileManager.Instance.ReadFile(fileName + ".conv");
+        TextAsset asset = Resources.Load<TextAsset>(curEventBasicPath + fileName);
+        string fileData = asset.text;
         
         int curIndex = 0;
 
@@ -208,6 +210,7 @@ public class ConversationManager : Manager<ConversationManager>
     public void StartConversationEvent(string eventName)
     {
         SceneManager.Instance.ChangeScene("ConversationScene");
+        SetCurEventBasicPath(eventName);
         ParseConvFile(eventName + "_Basic");
         ShowText();
     }
@@ -217,6 +220,12 @@ public class ConversationManager : Manager<ConversationManager>
     {
         if(curConvIndex < convDatas.Count)
         {
+            if(CheckEnd())
+            {
+                EventManager.Instance.EventEnded();
+                return;
+            }
+
             if (convText.setNewString(convDatas[curConvIndex].convSummary))
             {
                 string talker;
@@ -239,6 +248,11 @@ public class ConversationManager : Manager<ConversationManager>
         {
             convText.ShowWholeText();
         }
+    }
+
+    private bool CheckEnd()
+    {
+        return (convDatas[curConvIndex].talkerCode == -2);
     }
 
     private IEnumerator CorCheckDistracter(int index)
@@ -297,11 +311,14 @@ public class ConversationManager : Manager<ConversationManager>
         ShowText();
     }
 
+    private void SetCurEventBasicPath(string eventName)
+    {
+        curEventBasicPath = "Datas/Conversations/" + eventName+ "/";
+    }
+
     public void InitConversationDatas()
     {
         convDatas.Clear();
         curConvIndex = 0;
     }
-
-
 }
