@@ -50,6 +50,8 @@ public class Manager<T> : MonoBehaviour where T : Manager<T>
                 Destroy(this);
             return;
         }
+
+        StopAllCoroutines();
     }
 
 	// Use this for initialization

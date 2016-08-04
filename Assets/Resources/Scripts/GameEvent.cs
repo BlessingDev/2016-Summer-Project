@@ -15,4 +15,5 @@ public abstract class GameEvent : MonoBehaviour
 
     public abstract bool ConditionCheck();
     public abstract void ExecuteEvent();
+    public abstract void EventEnded();
 }

@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine.UI;
 
 /*
- * 이 스크립트는 주어진 문자열을 mLabel에 정해진 간격으로 천천히 띄워주는 역할을 한다. (미연시 사양 개조)
+ * 이 스크립트는 주어진 문자열을 Text에 정해진 간격으로 천천히 띄워주는 역할을 한다. (미연시 사양 개조)
 */
 public class ShowTextSlowly : MonoBehaviour
 {

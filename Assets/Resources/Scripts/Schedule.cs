@@ -41,7 +41,7 @@ public abstract class Schedule : MonoBehaviour
         }
     }
 
-    private bool removable = false;       // 편집 제한된 스케줄인가
+    private bool removable = true;       // 편집 제한된 스케줄인가
     public bool IsRemovable
     {
         get

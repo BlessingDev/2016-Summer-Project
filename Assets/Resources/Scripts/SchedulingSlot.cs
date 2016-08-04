@@ -45,28 +45,29 @@ public class SchedulingSlot : MonoBehaviour, IDropHandler
 
         if (item)
         {
-            Destroy(item);
-            SchedulingManager.Instance.DeleteAt(time);
+            if (SchedulingManager.Instance.DeleteAt(time))
+            {
+                Destroy(item);
+                var handler = item.GetComponent<SchedulingDragHandler>();
+                handler.OriHandler.Steaker.Num += 1;
 
-            var handler = item.GetComponent<SchedulingDragHandler>();
-            handler.OriHandler.Steaker.Num += 1;
+                SchedulingDragHandler.draggingItem.transform.SetParent(transform);
+                SchedulingDragHandler.draggingItem.transform.localScale = Vector3.one;
+                SchedulingManager.Instance.SetSchedule(time, SchedulingDragHandler.draggingItem.GetComponent<SchedulingDragHandler>().Type);
+            }
         }
-
-        SchedulingDragHandler.draggingItem.transform.SetParent(transform);
-        SchedulingDragHandler.draggingItem.transform.localScale = Vector3.one;
-        SchedulingManager.Instance.SetSchedule(time, SchedulingDragHandler.draggingItem.GetComponent<SchedulingDragHandler>().Type);
     }
 
     public void OnClick()
     {
         if(item)
         {
-            Destroy(item);
-
-            SchedulingManager.Instance.DeleteAt(time);
-
-            var handler = item.GetComponent<SchedulingDragHandler>();
-            handler.OriHandler.Steaker.Num += 1;
+            if(SchedulingManager.Instance.DeleteAt(time))
+            {
+                Destroy(item);
+                var handler = item.GetComponent<SchedulingDragHandler>();
+                handler.OriHandler.Steaker.Num += 1;
+            }
         }
     }
 }

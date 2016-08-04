@@ -191,6 +191,14 @@ public class SchedulingManager : Manager<SchedulingManager>
 
                 MakeSteakerBook();
                 break;
+            case 0:
+
+                break;
+            default:
+                progressing = false;
+                schedulePopup = null;
+
+                break;
         }
     }
 
@@ -257,9 +265,9 @@ public class SchedulingManager : Manager<SchedulingManager>
     //
     //    type: 스케줄의 타입
     //
-    public void SetSchedule(int time, ScheduleType type)
+    public void SetSchedule(int time, ScheduleType type, bool removable = true)
     {
-        if(scheduleList[time - 1] != null)
+        if(scheduleList[time - 1] != null && scheduleList[time - 1].IsRemovable)
         {
             DeleteAt(time);
         }
@@ -267,9 +275,10 @@ public class SchedulingManager : Manager<SchedulingManager>
         GameObject obj = null;
         if(preScheduleDic.TryGetValue(type, out obj))
         {
-            GameObject ins = Instantiate<GameObject>(obj);
+            GameObject ins = Instantiate(obj);
 
             scheduleList[time - 1] = ins.GetComponent<Schedule>();
+            scheduleList[time - 1].IsRemovable = removable;
         }
         else
         {
@@ -391,7 +400,7 @@ public class SchedulingManager : Manager<SchedulingManager>
     {
         if (time >= 1 && time <= 24)
         {
-            if (scheduleList[time - 1])
+            if (scheduleList[time - 1] && scheduleList[time - 1].IsRemovable)
             {
                 Destroy(scheduleList[time - 1].gameObject);
                 scheduleList[time - 1] = null;
@@ -399,7 +408,7 @@ public class SchedulingManager : Manager<SchedulingManager>
             }
             else
             {
-                Debug.LogWarning("the Schedule DOESN'T EXIST");
+                Debug.LogWarning("the Schedule CAN'T Be deleted");
                 return false;
             }
         }
@@ -656,19 +665,6 @@ public class SchedulingManager : Manager<SchedulingManager>
             obj.transform.localPosition = pos;
 
             yield return null;
-        }
-    }
-
-    public void SetSteakerInfoNum(ScheduleType type, int num)
-    {
-        GameObject obj;
-        if(curSteakerDic.TryGetValue(type, out obj))
-        {
-            obj.GetComponent<Steaker>().Num = num;
-        }
-        else
-        {
-            Debug.LogWarning("The Steaker Doesn't Exist");
         }
     }
 }

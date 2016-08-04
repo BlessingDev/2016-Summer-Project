@@ -4,6 +4,7 @@ using System.Collections;
 public class EventManager : Manager<EventManager>
 {
     GameEvent[] events;
+    private GameEvent curEvent;
 
     // Use this for initialization
     void Start ()
@@ -25,9 +26,16 @@ public class EventManager : Manager<EventManager>
             {
                 if(events[i].ConditionCheck())
                 {
+                    curEvent = events[i];
                     events[i].ExecuteEvent();
                 }
             }
         }
+    }
+
+    public void EventEnded()
+    {
+        curEvent.EventEnded();
+        Destroy(curEvent.gameObject);
     }
 }
