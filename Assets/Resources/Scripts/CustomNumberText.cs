@@ -125,6 +125,7 @@ public class CustomNumberText : MonoBehaviour {
             }
         }
 
+        text = text.Replace('.', '⊙');
         entireRect.width = 0;
         entireRect.height = 0;
         for(int i = 0; i < text.Length; i += 1)

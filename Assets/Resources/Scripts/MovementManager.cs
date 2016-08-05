@@ -1,6 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
+public struct PathFindingRect
+{
+    public Rect rect;
+    public List<Rect> obstainsRect;
+}
+
 public class MovementManager : Manager<MovementManager>
 {
     [SerializeField]
@@ -13,6 +19,8 @@ public class MovementManager : Manager<MovementManager>
     private float speed = 0.1f;
 
     private List<Rect> rects = new List<Rect>();
+    private const int TILE_SIZE = 10;
+    private List<List<PathFindingRect>> TileMap;
 
 	// Use this for initialization
 	void Start ()

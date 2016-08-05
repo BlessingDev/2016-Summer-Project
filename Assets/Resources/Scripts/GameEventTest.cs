@@ -24,10 +24,7 @@ public class GameEventTest : GameEvent
 
     public override void EventEnded()
     {
-        for(int i = 0; i < 24; i += 1)
-        {
-            SchedulingManager.Instance.SetSchedule(i + 1, ScheduleType.TakeARest, false);
-        }
+        GameManager.Instance.scheduleButtonType = ScheduleButtonType.Test;
         SceneManager.Instance.ChangeScene("GameScene");
     }
 }

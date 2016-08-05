@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using System;
 using System.IO;
 using UnityEngine.UI;
 
@@ -28,6 +27,7 @@ public class LoadExam : Manager<LoadExam>
     private Dictionary<string, List<ProblemData>> problemDatas;
     private List<ProblemData> selectedProblems;
 
+    private bool curAnswer;
     private int curShowIndex = 0;
     private const int PROBLEMS_PER_SUBJECT = 3;
 
@@ -45,9 +45,10 @@ public class LoadExam : Manager<LoadExam>
     void Start()
     {
         Instance.Init();
-        LoadTextFile("Exam");
+        problemDatas = new Dictionary<string, List<ProblemData>>();
+        selectedProblems = new List<ProblemData>();
 
-        InitTestScene();
+        LoadTextFile("Exam");
     }
 
     public override void OnLevelWasLoaded(int level)
@@ -80,6 +81,7 @@ public class LoadExam : Manager<LoadExam>
         obj.transform.localScale = Vector3.one;
         omr = obj.GetComponent<Animator>();
 
+        SelectProblems();
         ShowNextProblem();
     }
 
@@ -105,7 +107,7 @@ public class LoadExam : Manager<LoadExam>
                 while (line[curIndex] != '<')
                     curIndex += 1;
 
-                string val = ReadUntilTagEnd(line, curIndex, out curIndex);
+                string val = ReadUntilTagEnd(line, curIndex + 1, out curIndex);
                 data.subject = val;
 
                 while (line[curIndex] != '<')
@@ -168,22 +170,35 @@ public class LoadExam : Manager<LoadExam>
 
     private void ShowNextProblem()
     {
+        if(curShowIndex < selectedProblems.Count)
+        {
+            subject.text = selectedProblems[curShowIndex].subject;
+            text.text = selectedProblems[curShowIndex].summary;
+            curAnswer = selectedProblems[curShowIndex].answer;
 
+            curShowIndex += 1;
+        }
+        else
+        {
+            TestEnded();
+        }
     }
 
     private void SelectProblems()
     {
         if (selectedProblems.Count > 0)
             selectedProblems.Clear();
-
-        int index = 0;
+        
         foreach(var iter in problemDatas)
         {
-            while (selectedProblems.Count < (index + 1) *  PROBLEMS_PER_SUBJECT)
+            List<ProblemData> list = iter.Value;
+            for(int i = 0; i < PROBLEMS_PER_SUBJECT; i += 1)
             {
+                int selectedIdx = Random.Range(0, list.Count);
 
+                selectedProblems.Add(list[selectedIdx]);
+                list.RemoveAt(selectedIdx);
             }
-            index += 1;
         }
     }
 
@@ -240,6 +255,34 @@ public class LoadExam : Manager<LoadExam>
 
     public void AnswerMarked(bool answer)
     {
+        if(answer)
+        {
+            omr.SetBool("O", true);
+        }
+        else
+        {
+            omr.SetBool("X", true);
+        }
 
+        UIManager.Instance.SetEnableTouchLayer("Main", false);
+    }
+
+    public void AnimationEnded()
+    {
+        omr.SetBool("O", false);
+        omr.SetBool("X", false);
+
+        UIManager.Instance.SetEnableTouchLayer("Main", true);
+        ShowNextProblem();
+    }
+
+    public void TestEnded()
+    {
+        Date date = GameManager.Instance.GameDate;
+        date.Day += 1;
+        GameManager.Instance.GameDate = date;
+
+        GameManager.Instance.scheduleButtonType = ScheduleButtonType.Schedule;
+        SceneManager.Instance.ChangeScene("GameScene");
     }
 }
