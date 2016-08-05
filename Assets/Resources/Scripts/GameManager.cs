@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public struct Date
 {
@@ -100,6 +101,14 @@ public enum SkinType
     Wall,
     Floor,
     Costume
+}
+
+public enum ScheduleButtonType
+{
+    Schedule,
+    Test,
+    Interview,
+    End
 }
 
 public class GameManager : Manager<GameManager>
@@ -234,6 +243,12 @@ public class GameManager : Manager<GameManager>
 
     int curLevel = -1;
 
+    [SerializeField]
+    private GameObject preScheduleButton;
+    private Button scheduleButton;
+
+    public ScheduleButtonType scheduleButtonType = ScheduleButtonType.Schedule;
+
     public override void Init()
     {
         if (!inited)
@@ -245,6 +260,8 @@ public class GameManager : Manager<GameManager>
     // Use this for initialization
     void Start()
     {
+        base.Init();
+
         stress = 0;
         schedulesDic = new Dictionary<ScheduleType, int>();
 
@@ -295,10 +312,17 @@ public class GameManager : Manager<GameManager>
         gameDate.Year = 1;
         gameDate.Month = 3;
         gameDate.Day = 2;
-
-        if(prePausePopup == null || preStatPopup == null)
+       
+        if(prePausePopup == null || preStatPopup == null ||
+            preScheduleButton == null)
         {
             Debug.LogWarning("The Prefab NOT PREPARED");
+        }
+
+        if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
+            == SceneManager.Instance.GetLevel("GameScene"))
+        {
+            InitGameScene();
         }
     }
 
@@ -324,18 +348,42 @@ public class GameManager : Manager<GameManager>
         }
 
         animationLayer = new Dictionary<string, List<Animator>>();
-        switch (level)
+
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
+            == SceneManager.Instance.GetLevel("GameScene"))
         {
-            case 0:
-                if (executeSchedule)
-                {
-                    executeSchedule = false;
+            InitGameScene();
+        }
+    }
 
-                    SchedulingManager.Instance.OpenSchedulePopup();
+    private void InitGameScene()
+    {
+        if (executeSchedule)
+        {
+            executeSchedule = false;
+
+            SchedulingManager.Instance.OpenSchedulePopup();
 
 
-                    SchedulingManager.Instance.Progressing = true;
-                }
+            SchedulingManager.Instance.Progressing = true;
+        }
+
+        GameObject obj = Instantiate(preScheduleButton);
+        obj.transform.SetParent(UIManager.Instance.Canvas.transform);
+        obj.transform.localPosition = new Vector2(165, -303);
+        obj.transform.localScale = Vector3.one;
+        scheduleButton = obj.GetComponent<Button>();
+
+        switch(scheduleButtonType)
+        {
+            case ScheduleButtonType.Test:
+                scheduleButton.image.sprite = 
+                    Resources.Load<Sprite>("Sprites/UI/UI_Button_Schedule_Normal");
+                SpriteState state = scheduleButton.spriteState;
+                state.pressedSprite = Resources.Load<Sprite>("SpritesUI/UI_Button_Schedule_Pushed");
+                scheduleButton.spriteState = state;
+
+                scheduleButton.GetComponent<SceneChangeButton>().sceneName = "ExamScene";
                 break;
         }
     }
