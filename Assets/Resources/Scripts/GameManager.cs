@@ -217,8 +217,33 @@ public class GameManager : Manager<GameManager>
         }
     }
 
-	// Use this for initialization
-	void Start()
+    private GameObject world;
+    public GameObject World
+    {
+        get
+        {
+            if(curLevel != UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex)
+            {
+                curLevel = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
+                world = GameObject.Find("World");
+            }
+
+            return world;
+        }
+    }
+
+    int curLevel = -1;
+
+    public override void Init()
+    {
+        if (!inited)
+            Start();
+
+        base.Init();
+    }
+
+    // Use this for initialization
+    void Start()
     {
         stress = 0;
         schedulesDic = new Dictionary<ScheduleType, int>();
@@ -292,8 +317,13 @@ public class GameManager : Manager<GameManager>
     {
         base.OnLevelWasLoaded(level);
 
+        if (curLevel != UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex)
+        {
+            curLevel = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
+            world = GameObject.Find("World");
+        }
+
         animationLayer = new Dictionary<string, List<Animator>>();
-        UIManager.Instance.OnLevelWasLoaded(level);
         switch (level)
         {
             case 0:

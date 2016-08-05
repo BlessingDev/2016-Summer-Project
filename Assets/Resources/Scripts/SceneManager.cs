@@ -16,6 +16,7 @@ public class SceneManager : Manager<SceneManager>
         scenes.Add("ScheduleScene", 1);
         scenes.Add("ShopScene", 2);
         scenes.Add("ConversationScene", 3);
+        scenes.Add("NoteScene", 4);
     }
 	
     public bool ChangeScene(string sceneName)

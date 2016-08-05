@@ -169,7 +169,6 @@ public class SchedulingManager : Manager<SchedulingManager>
     public override void OnLevelWasLoaded(int level)
     {
         base.OnLevelWasLoaded(level);
-        UIManager.Instance.OnLevelWasLoaded(level);
         switch(level)
         {
             case 1:

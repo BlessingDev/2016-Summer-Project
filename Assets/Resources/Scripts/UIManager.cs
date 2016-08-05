@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class UIManager : Manager<UIManager>
 {
@@ -10,12 +11,20 @@ public class UIManager : Manager<UIManager>
     {
         get
         {
+            if(curIndex != UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex)
+            {
+                curIndex = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
+                canvas = FindObjectOfType<Canvas>();
+            }
+
             return canvas;
         }
     }
 
     private EscObserver observer = null;
     private Dictionary<string, List<Image>> layersDic;
+
+    private int curIndex = -1;
 
     public override void Init()
     {
@@ -38,7 +47,13 @@ public class UIManager : Manager<UIManager>
     override public void OnLevelWasLoaded(int level)
     {
         base.OnLevelWasLoaded(level);
-        canvas = FindObjectOfType<Canvas>();
+
+        if (curIndex != UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex)
+        {
+            curIndex = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
+            canvas = FindObjectOfType<Canvas>();
+        }
+
         observer = FindObjectOfType<EscObserver>();
         if(layersDic != null)
             layersDic.Clear();
