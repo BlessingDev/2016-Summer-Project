@@ -238,11 +238,18 @@ public class MovementManager : Manager<MovementManager>
 
         if (CollisionCheck())
         {
-            Debug.LogWarning("Player Can Not Go There");
-            findingPath = false;
-            StopAllCoroutines();
-            PathFindingFailed();
-            arrive = true;
+            desPos = ConjecturingDestination(desPos);
+
+            playerRect.position = desPos + player.offset;
+
+            if(CollisionCheck())
+            {
+                Debug.LogWarning("Player Can Not Go There");
+                findingPath = false;
+                StopAllCoroutines();
+                PathFindingFailed();
+                arrive = true;
+            }
         }
 
         float time = 0f;
@@ -387,6 +394,82 @@ public class MovementManager : Manager<MovementManager>
             }
 
         }
+    }
+
+    private Vector2 ConjecturingDestination(Vector2 oriPos)
+    {
+        Vector2 curPos = oriPos;
+        foreach(var iter in rects)
+        {
+            playerRect.position = curPos + player.offset;
+            if(IntersectRect(iter, playerRect))
+            {
+                int minVal = int.MaxValue;
+                int directions = -1;    // 플레이어를 기준으로 1이면 왼쪽, 2면 오른쪽, 3이면 위쪽, 4면 아래쪽
+
+                float xMin1 = iter.position.x - iter.size.x / 2;
+                float xMax1 = iter.position.x + iter.size.x / 2;
+                float yMin1 = iter.position.y - iter.size.y / 2;
+                float yMax1 = iter.position.y + iter.size.y / 2;
+
+                float xMin2 = playerRect.position.x - playerRect.size.x / 2;
+                float xMax2 = playerRect.position.x + playerRect.size.x / 2;
+                float yMin2 = playerRect.position.y - playerRect.size.y / 2;
+                float yMax2 = playerRect.position.y + playerRect.size.y / 2;
+
+                if(xMin2 < xMax1)
+                {
+                    if(minVal > Mathf.Abs(xMin2 - xMax1))
+                    {
+                        minVal = (int)Mathf.Abs(xMin2 - xMax1);
+                        directions = 1;
+                    }
+                }
+                if(xMax2 > xMin1)
+                {
+                    if (minVal > Mathf.Abs(xMax2 - xMin1))
+                    {
+                        minVal = (int)Mathf.Abs(xMax2 - xMin1);
+                        directions = 2;
+                    }
+                }
+                if (yMin2 < yMax1)
+                {
+                    if (minVal > Mathf.Abs(yMin2 - yMax1))
+                    {
+                        minVal = (int)Mathf.Abs(yMin2 - yMax1);
+                        directions = 4;
+                    }
+                }
+                if (yMax2 > yMin1)
+                {
+                    if (minVal > Mathf.Abs(yMax2 - yMin1))
+                    {
+                        minVal = (int)Mathf.Abs(yMax2 - yMin1);
+                        directions = 3;
+                    }
+                }
+
+                if(directions == 1)
+                {
+                    curPos.x += minVal + 0.5f;
+                }
+                else if(directions == 2)
+                {
+                    curPos.x -= minVal + 0.5f;
+                }
+                else if (directions == 3)
+                {
+                    curPos.y -= minVal + 0.5f;
+                }
+                else if (directions == 4)
+                {
+                    curPos.y += minVal + 0.5f;
+                }
+            }
+        }
+
+        return curPos;
     }
 
     public void PathFindingFailed()
