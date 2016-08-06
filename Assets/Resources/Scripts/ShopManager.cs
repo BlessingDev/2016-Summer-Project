@@ -86,6 +86,22 @@ public class ShopManager : Manager<ShopManager>
                     buyCheck.Add((SkinType)i, checkDic);
                     priceDic.Add((SkinType)i, priceNameDic);
                 }
+                else
+                {
+                    Dictionary<string, bool> checkDic = new Dictionary<string, bool>();
+                    Dictionary<string, int> priceNameDic = new Dictionary<string, int>();
+                    for (int j = 0; j < objs.Length; j += 1)
+                    {
+                        CostumeSlot slot = objs[j].GetComponent<CostumeSlot>();
+                        // 세이브 기능 구현시 고쳐야 할 부분
+                        checkDic.Add(slot.CostumeCode.ToString(), false);
+
+                        priceNameDic.Add(slot.CostumeCode.ToString(), slot.Price);
+                    }
+
+                    buyCheck.Add((SkinType)i, checkDic);
+                    priceDic.Add((SkinType)i, priceNameDic);
+                }
             }
 
             effecters = FindObjectsOfType<ScaleEffecter>();

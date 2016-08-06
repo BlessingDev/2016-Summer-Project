@@ -9,6 +9,9 @@ public enum ScheduleType
     Korean,
     Science,
     Social,
+    WorldHistory,
+    Art,
+    Music,
     Volunteer,
     Parttime
 }

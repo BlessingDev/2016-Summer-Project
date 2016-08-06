@@ -6,6 +6,7 @@ public enum ParameterCategory
     Math,
     English,
     Art,
+    Music,
     ForeignLanguages,
     Korean,
     Science,

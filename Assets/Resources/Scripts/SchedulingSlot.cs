@@ -56,6 +56,12 @@ public class SchedulingSlot : MonoBehaviour, IDropHandler
                 SchedulingManager.Instance.SetSchedule(time, SchedulingDragHandler.draggingItem.GetComponent<SchedulingDragHandler>().Type);
             }
         }
+        else
+        {
+            SchedulingDragHandler.draggingItem.transform.SetParent(transform);
+            SchedulingDragHandler.draggingItem.transform.localScale = Vector3.one;
+            SchedulingManager.Instance.SetSchedule(time, SchedulingDragHandler.draggingItem.GetComponent<SchedulingDragHandler>().Type);
+        }
     }
 
     public void OnClick()

@@ -181,6 +181,17 @@ public class GameManager : Manager<GameManager>
             return player;
         }
     }
+    private Vector2 playerPos;
+    public Vector2 PlayerPos
+    {
+        get
+        {
+            if (playerPos == null)
+                playerPos = Player.transform.localPosition;
+
+            return playerPos;
+        }
+    }
 
     private Dictionary<ScheduleType, int> schedulesDic;
     public Dictionary<ScheduleType, int> SchedulesDic
@@ -250,6 +261,14 @@ public class GameManager : Manager<GameManager>
             {
                 curLevel = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
                 world = GameObject.Find("World");
+
+                if (curLevel == SceneManager.Instance.GetLevel("GameScene"))
+                {
+                    player = Instantiate(prePlayer);
+                    player.transform.SetParent(world.transform);
+                    player.transform.localPosition = Vector3.zero;
+                    player.transform.localScale = Vector3.one;
+                }
             }
 
             return world;
@@ -281,11 +300,15 @@ public class GameManager : Manager<GameManager>
         schedulesDic = new Dictionary<ScheduleType, int>();
 
         schedulesDic.Add(ScheduleType.TakeARest, -1);
-        schedulesDic.Add(ScheduleType.BasicMath, 8);
-        schedulesDic.Add(ScheduleType.English, 8);
-        schedulesDic.Add(ScheduleType.Korean, 8);
-        schedulesDic.Add(ScheduleType.Volunteer, 8);
-
+        schedulesDic.Add(ScheduleType.BasicMath, 4);
+        schedulesDic.Add(ScheduleType.English, 4);
+        schedulesDic.Add(ScheduleType.Korean, 4);
+        schedulesDic.Add(ScheduleType.Volunteer, 4);
+        schedulesDic.Add(ScheduleType.Art, 4);
+        schedulesDic.Add(ScheduleType.Music, 4);
+        schedulesDic.Add(ScheduleType.Parttime, 4);
+        schedulesDic.Add(ScheduleType.Science, 4);
+        schedulesDic.Add(ScheduleType.WorldHistory, 4);
 
         parameters = new Dictionary<string, float>();
 
@@ -295,6 +318,8 @@ public class GameManager : Manager<GameManager>
         parameters.Add("Korean", 0);
         parameters.Add("Science", 0);
         parameters.Add("Social", 0);
+        parameters.Add("Art", 0);
+        parameters.Add("Music", 0);
         parameters.Add("Volunteer", 0);
 
         parameterLimit = new Dictionary<string, int>();
@@ -350,6 +375,9 @@ public class GameManager : Manager<GameManager>
             UIManager.Instance.update();
             MovementManager.Instance.update();
             CheckGameOver();
+
+            if(curLevel == SceneManager.Instance.GetLevel("GameScene"))
+                playerPos = Player.transform.localPosition;
         }
     }
 
@@ -361,6 +389,14 @@ public class GameManager : Manager<GameManager>
         {
             curLevel = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
             world = GameObject.Find("World");
+
+            if (curLevel == SceneManager.Instance.GetLevel("GameScene"))
+            {
+                player = Instantiate(prePlayer);
+                player.transform.SetParent(world.transform);
+                player.transform.localPosition = Vector3.zero;
+                player.transform.localScale = Vector3.one;
+            }
         }
 
         animationLayer = new Dictionary<string, List<Animator>>();

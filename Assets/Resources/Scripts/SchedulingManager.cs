@@ -111,6 +111,8 @@ public class SchedulingManager : Manager<SchedulingManager>
     [SerializeField]
     private GameObject preChangeNum = null;
 
+    private Dictionary<string, ParameterCategory> parameterConversion;
+
     // Use this for initialization
     void Start ()
     {
@@ -118,6 +120,7 @@ public class SchedulingManager : Manager<SchedulingManager>
         preSteakerDic = new Dictionary<ScheduleType, GameObject>();
         steakerList = new List<List<SteakerInfo>>();
         preParameters = new Dictionary<ParameterCategory, GameObject>();
+        parameterConversion = new Dictionary<string, ParameterCategory>();
 
         GameObject[] objs = Resources.LoadAll<GameObject>("Prefabs/Schedules/Acts/");
         
@@ -157,6 +160,14 @@ public class SchedulingManager : Manager<SchedulingManager>
 
         timeRate = 3f; // 1일은 8초
         progressing = false;
+
+        parameterConversion.Add("Stress", ParameterCategory.Stress);
+        parameterConversion.Add("Math", ParameterCategory.Math);
+        parameterConversion.Add("English", ParameterCategory.English);
+        parameterConversion.Add("Volunteer", ParameterCategory.Volunteer);
+        parameterConversion.Add("Social", ParameterCategory.Social);
+        parameterConversion.Add("Science", ParameterCategory.Science);
+        parameterConversion.Add("Art", ParameterCategory.Art);
 
         if(preOneToTwelve == null || preThirteenToTwentyFour == null ||
             preSteakerPlate == null || preSteakerButton == null ||
@@ -342,10 +353,18 @@ public class SchedulingManager : Manager<SchedulingManager>
             case ScheduleType.BasicMath:
             case ScheduleType.English:
             case ScheduleType.Korean:
+            case ScheduleType.Art:
+            case ScheduleType.Music:
+            case ScheduleType.Science:
+            case ScheduleType.Social:
+            case ScheduleType.WorldHistory:
                 aniType = 2;
                 break;
             case ScheduleType.Volunteer:
                 aniType = 3;
+                break;
+            case ScheduleType.Parttime:
+                aniType = 4;
                 break;
         }
 
@@ -664,6 +683,18 @@ public class SchedulingManager : Manager<SchedulingManager>
             obj.transform.localPosition = pos;
 
             yield return null;
+        }
+    }
+
+    public void AddParameter(string parameterName, float addVal)
+    {
+        GameManager.Instance.SetParameter(parameterName,
+            GameManager.Instance.GetParameter(parameterName) + addVal);
+
+        ParameterCategory cat;
+        if(parameterConversion.TryGetValue(parameterName, out cat))
+        {
+            ShowChangeText(cat, addVal);
         }
     }
 }

@@ -29,7 +29,6 @@ public class PathInfo : IComparable<PathInfo>
 
 public class MovementManager : Manager<MovementManager>
 {
-    private BoxCollider2D map = null;
     private BoxCollider2D player = null;
     private Animator playerAnimation = null;
 
@@ -40,7 +39,6 @@ public class MovementManager : Manager<MovementManager>
     private List<Rect> rects = new List<Rect>();
     private const int TILE_SIZE = 10;
     private Rect playerRect;
-    private Rect mapRect;
 
     private float sin45;
     private float cos45;
@@ -88,8 +86,6 @@ public class MovementManager : Manager<MovementManager>
     {
         if (gameScene)
         {
-            CheckInput();
-
             if (path != null)
                 GoByPath();
         }
@@ -116,7 +112,6 @@ public class MovementManager : Manager<MovementManager>
         gameScene = true;
         player = GameManager.Instance.Player.GetComponent<BoxCollider2D>();
         playerAnimation = player.GetComponent<Animator>();
-        map = GameObject.FindGameObjectWithTag("Map").GetComponent<BoxCollider2D>();
 
         var objs = GameObject.FindGameObjectsWithTag("Furnitures");
         for (int i = 0; i < objs.Length; i += 1)
@@ -132,9 +127,6 @@ public class MovementManager : Manager<MovementManager>
         playerRect = new Rect();
         playerRect.position = (Vector2)player.transform.localPosition + player.offset;
         playerRect.size = player.size;
-        mapRect = new Rect();
-        mapRect.position = (Vector2)map.transform.localPosition + map.offset;
-        mapRect.size = map.size;
     }
 
     private void GoByPath()
@@ -377,25 +369,6 @@ public class MovementManager : Manager<MovementManager>
             return false;
     }
 
-    private void CheckInput()
-    {
-        if (Input.GetMouseButtonDown(0))
-        {
-
-            Vector2 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-            if (ContainsPoint(mapRect, worldPos))
-            {
-
-                if (findingPath)
-                    StopAllCoroutines();
-
-                StartCoroutine(FindPath(player.transform.localPosition, worldPos));
-            }
-
-        }
-    }
-
     private Vector2 ConjecturingDestination(Vector2 oriPos)
     {
         Vector2 curPos = oriPos;
@@ -476,5 +449,15 @@ public class MovementManager : Manager<MovementManager>
     {
         playerAnimation.SetBool("Embrassing", true);
         enabled = false;
+    }
+
+    public void FindPath()
+    {
+        Vector2 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+        if (findingPath)
+            StopAllCoroutines();
+
+        StartCoroutine(FindPath(player.transform.localPosition, worldPos));
     }
 }
