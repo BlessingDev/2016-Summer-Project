@@ -157,12 +157,21 @@ public class GameManager : Manager<GameManager>
         }
     }
 
+    [SerializeField]
     private GameObject prePlayer = null;
     private GameObject player = null;
     public GameObject Player
     {
         get
         {
+            if(FindObjectsOfType<SyncPlayerCostume>().Length == 0)
+            {
+                player = Instantiate(prePlayer);
+                player.transform.SetParent(World.transform);
+                player.transform.localPosition = Vector3.zero;
+                player.transform.localScale = Vector3.one;
+            }
+
             return player;
         }
     }
@@ -314,7 +323,7 @@ public class GameManager : Manager<GameManager>
         gameDate.Day = 2;
        
         if(prePausePopup == null || preStatPopup == null ||
-            preScheduleButton == null)
+            preScheduleButton == null || prePlayer == null)
         {
             Debug.LogWarning("The Prefab NOT PREPARED");
         }
@@ -333,6 +342,7 @@ public class GameManager : Manager<GameManager>
             SchedulingManager.Instance.update();
             EventManager.Instance.update();
             UIManager.Instance.update();
+            MovementManager.Instance.update();
             CheckGameOver();
         }
     }
@@ -356,7 +366,7 @@ public class GameManager : Manager<GameManager>
         }
     }
 
-    private void InitGameScene()
+    public void InitGameScene()
     {
         if (executeSchedule)
         {
@@ -378,14 +388,17 @@ public class GameManager : Manager<GameManager>
         {
             case ScheduleButtonType.Test:
                 scheduleButton.image.sprite = 
-                    Resources.Load<Sprite>("Sprites/UI/UI_Button_Schedule_Normal");
+                    Resources.Load<Sprite>("Sprites/UI/UI_Button_Test_Normal");
                 SpriteState state = scheduleButton.spriteState;
-                state.pressedSprite = Resources.Load<Sprite>("SpritesUI/UI_Button_Schedule_Pushed");
+                state.pressedSprite = Resources.Load<Sprite>("SpritesUI/UI_Button_Test_Pushed");
                 scheduleButton.spriteState = state;
 
                 scheduleButton.GetComponent<SceneChangeButton>().sceneName = "ExamScene";
                 break;
         }
+
+        obj = Player;
+        
     }
 
     private void CheckGameOver()
