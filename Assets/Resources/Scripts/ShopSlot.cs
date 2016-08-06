@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class ShopSlot : MonoBehaviour
 {
+    private Sprite iconSprite = null;
+
     private string spriteName;
     public string SpriteName
     {
@@ -20,6 +22,16 @@ public class ShopSlot : MonoBehaviour
         get
         {
             return price;
+        }
+    }
+
+    [SerializeField]
+    private string summary = "";
+    public string Summary
+    {
+        get
+        {
+            return summary;
         }
     }
 
@@ -44,6 +56,7 @@ public class ShopSlot : MonoBehaviour
         }
 
         spriteName = sprite.sprite.name;
+        iconSprite = sprite.sprite;
     }
 
     void Start()
@@ -56,6 +69,9 @@ public class ShopSlot : MonoBehaviour
 
     public void OnClick()
     {
+        ShopManager.Instance.RefreshIcon(iconSprite);
+        ShopManager.Instance.RefreshExplanation(summary);
+        ShopManager.Instance.RefreshPrice(price);
         ShopManager.Instance.SelectedSkinName = spriteName;
     }
 }

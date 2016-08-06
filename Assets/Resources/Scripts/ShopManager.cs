@@ -40,14 +40,15 @@ public class ShopManager : Manager<ShopManager>
         set
         {
             selectedSkinName = value;
-            RefreshExplanation();
-            RefreshIcon();
             CheckButton();
         }
     }
 
     private Dictionary<SkinType, Dictionary<string, int>> priceDic;
     private Dictionary<SkinType, Dictionary<string, bool>> buyCheck;
+
+    private Transform moneyIcon;
+    private Transform moneyText;
 
     public override void Init()
     {
@@ -113,11 +114,22 @@ public class ShopManager : Manager<ShopManager>
         }
     }
 
+    public override void OnLevelWasLoaded(int level)
+    {
+        base.OnLevelWasLoaded(level);
+
+        if(level == SceneManager.Instance.GetLevel("ShopScene"))
+        {
+            moneyIcon = GameObject.Find("MoneyIcon").transform;
+            moneyText = GameObject.Find("MoneyText").transform;
+        }
+    }
+
     public void OpenShopPopup(SkinType shopType)
     {
         this.shopType = shopType;
 
-        UIManager.Instance.SetEnableTouchLayer("Main", true);
+        UIManager.Instance.SetEnableTouchLayer("Main", false);
         for(int i = 0; i < effecters.Length; i += 1)
         {
             effecters[i].enabled = false;
@@ -144,10 +156,14 @@ public class ShopManager : Manager<ShopManager>
                 obj.transform.localScale = Vector3.one;
             }
         }
+
+        moneyIcon.SetSiblingIndex(moneyIcon.GetSiblingIndex() + 1);
+        moneyText.SetSiblingIndex(moneyText.GetSiblingIndex() + 1);
     }
 
     public void ClosePopup()
     {
+        selectedSkinName = null;
         UIManager.Instance.SetEnableTouchLayer("Main", true);
         for (int i = 0; i < effecters.Length; i += 1)
         {
@@ -158,14 +174,21 @@ public class ShopManager : Manager<ShopManager>
         shopPopup = null;
     }
 
-    public void RefreshExplanation()
+    public void RefreshExplanation(string summary)
     {
-
+        shopPopup.SummaryText.text = summary;
     }
 
-    public void RefreshIcon()
+    public void RefreshPrice(int price)
     {
+        shopPopup.PriceText.Text = price.ToString();
+    }
 
+    public void RefreshIcon(Sprite sprite)
+    {
+        shopPopup.IconImage.enabled = true;
+        shopPopup.IconImage.sprite = sprite;
+        shopPopup.IconImage.SetNativeSize();
     }
 
     public void CheckButton()
@@ -192,45 +215,51 @@ public class ShopManager : Manager<ShopManager>
 
     public void Purchase()
     {
-        Dictionary<string, int> priceNameDic;
-        priceDic.TryGetValue(shopType, out priceNameDic);
-        int price;
-        if (priceNameDic.TryGetValue(selectedSkinName, out price))
+        if(selectedSkinName != null)
         {
-            if(price <= GameManager.Instance.Money)
+            Dictionary<string, int> priceNameDic;
+            priceDic.TryGetValue(shopType, out priceNameDic);
+            int price;
+            if (priceNameDic.TryGetValue(selectedSkinName, out price))
             {
-                GameManager.Instance.Money -= price;
-
-                Dictionary<string, bool> checkDic;
-                buyCheck.TryGetValue(shopType, out checkDic);
-                if (checkDic.ContainsKey(selectedSkinName))
+                if (price <= GameManager.Instance.Money)
                 {
-                    checkDic.Remove(selectedSkinName);
-                    checkDic.Add(selectedSkinName, true);
-                }
-                else
-                {
-                    Debug.LogError("Could not FIND name " + selectedSkinName);
-                }
+                    GameManager.Instance.Money -= price;
 
-                shopPopup.Bought();
+                    Dictionary<string, bool> checkDic;
+                    buyCheck.TryGetValue(shopType, out checkDic);
+                    if (checkDic.ContainsKey(selectedSkinName))
+                    {
+                        checkDic.Remove(selectedSkinName);
+                        checkDic.Add(selectedSkinName, true);
+                    }
+                    else
+                    {
+                        Debug.LogError("Could not FIND name " + selectedSkinName);
+                    }
+
+                    shopPopup.Bought();
+                }
             }
-        }
-        else
-        {
-            Debug.LogError("Could not FIND name " + selectedSkinName);
+            else
+            {
+                Debug.LogError("Could not FIND name " + selectedSkinName);
+            }
         }
     }
 
     public void Use()
     {
-        if(shopType < SkinType.Costume)
+        if(selectedSkinName != null)
         {
-            GameManager.Instance.SetSkinName(shopType, selectedSkinName);
-        }
-        else
-        {
-            GameManager.Instance.CostumeCode = int.Parse(selectedSkinName);
+            if (shopType < SkinType.Costume)
+            {
+                GameManager.Instance.SetSkinName(shopType, selectedSkinName);
+            }
+            else
+            {
+                GameManager.Instance.CostumeCode = int.Parse(selectedSkinName);
+            }
         }
     }
 }

@@ -26,9 +26,39 @@ public class ShopPopup : MonoBehaviour
     private Sprite useImageNormal = null;
     private Sprite useImagePushed = null;
 
+    [SerializeField]
+    private CustomNumberText priceText = null;
+    public CustomNumberText PriceText
+    {
+        get
+        {
+            return priceText;
+        }
+    }
+    [SerializeField]
+    private Text summaryText = null;
+    public Text SummaryText
+    {
+        get
+        {
+            return summaryText;
+        }
+    }
+    [SerializeField]
+    private Image iconImage = null;
+    public Image IconImage
+    {
+        get
+        {
+            return iconImage;
+        }
+    }
+
     void Start()
     {
-        if(purchaseButton == null || useButton == null)
+        if (purchaseButton == null || useButton == null ||
+            priceText == null || summaryText == null ||
+            iconImage == null)
         {
             Debug.LogError("purchaseButton or useButton is NULL");
             enabled = false;
