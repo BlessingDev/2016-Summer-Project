@@ -46,9 +46,8 @@ public class SchedulingManager : Manager<SchedulingManager>
         }
         set
         {
-            curTime = 1;
-            befTime = 0;
-            time = 0;
+            InitTime();
+
             SetCutSceneAnimation();
             SetParameterBar();
             progressing = value;
@@ -112,6 +111,9 @@ public class SchedulingManager : Manager<SchedulingManager>
     private GameObject preChangeNum = null;
 
     private Dictionary<string, ParameterCategory> parameterConversion;
+
+    public bool initTime = true;
+
 
     // Use this for initialization
     void Start ()
@@ -702,5 +704,19 @@ public class SchedulingManager : Manager<SchedulingManager>
     {
         schedulePopup.GotoMainButton.OnClick();
         schedulePopup.GotoMainButton.LockButton();
+    }
+
+    public void InitTime()
+    {
+        if(initTime)
+        {
+            curTime = 1;
+            befTime = 0;
+            time = 0;
+        }
+        else
+        {
+            initTime = true;
+        }
     }
 }

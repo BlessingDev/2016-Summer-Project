@@ -168,14 +168,7 @@ public class GameManager : Manager<GameManager>
             {
                 curLevel = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
                 world = GameObject.Find("World");
-
-                if(curLevel == SceneManager.Instance.GetLevel("GameScene"))
-                {
-                    player = Instantiate(prePlayer);
-                    player.transform.SetParent(world.transform);
-                    player.transform.localPosition = Vector3.zero;
-                    player.transform.localScale = Vector3.one;
-                }
+                
 
                 if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
                 == SceneManager.Instance.GetLevel("GameScene"))
@@ -267,14 +260,7 @@ public class GameManager : Manager<GameManager>
             {
                 curLevel = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
                 world = GameObject.Find("World");
-
-                if (curLevel == SceneManager.Instance.GetLevel("GameScene"))
-                {
-                    player = Instantiate(prePlayer);
-                    player.transform.SetParent(world.transform);
-                    player.transform.localPosition = Vector3.zero;
-                    player.transform.localScale = Vector3.one;
-                }
+                
 
                 if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
             == SceneManager.Instance.GetLevel("GameScene"))
@@ -416,14 +402,7 @@ public class GameManager : Manager<GameManager>
         {
             curLevel = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
             world = GameObject.Find("World");
-
-            if (curLevel == SceneManager.Instance.GetLevel("GameScene"))
-            {
-                player = Instantiate(prePlayer);
-                player.transform.SetParent(world.transform);
-                player.transform.localPosition = Vector3.zero;
-                player.transform.localScale = Vector3.one;
-            }
+            
 
             if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
             == SceneManager.Instance.GetLevel("GameScene"))
@@ -457,14 +436,6 @@ public class GameManager : Manager<GameManager>
             curLevel = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
             world = GameObject.Find("World");
 
-            if (curLevel == SceneManager.Instance.GetLevel("GameScene"))
-            {
-                player = Instantiate(prePlayer);
-                player.transform.SetParent(world.transform);
-                player.transform.localPosition = Vector3.zero;
-                player.transform.localScale = Vector3.one;
-            }
-
             if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
             == SceneManager.Instance.GetLevel("GameScene"))
             {
@@ -477,6 +448,11 @@ public class GameManager : Manager<GameManager>
 
     public void InitGameScene()
     {
+        player = Instantiate(prePlayer);
+        player.transform.SetParent(world.transform);
+        player.transform.localPosition = Vector3.zero;
+        player.transform.localScale = Vector3.one;
+
         if (executeSchedule)
         {
             executeSchedule = false;
@@ -543,12 +519,7 @@ public class GameManager : Manager<GameManager>
                 break;
         }
     }
-
-    public void StartSchedule()
-    {
-        SchedulingManager.Instance.Progressing = true;
-    }
-
+    
     public float GetParameter(string name)
     {
         float val = 0;

@@ -26,6 +26,11 @@ public class ConversationFileDataAlign : ConversationFileDataBase
     public string align = "";
 }
 
+public class ConversationFileDataPrefab : ConversationFileDataBase
+{
+    public string prefabName;
+}
+
 public struct DistracterData
 {
     public int code;
@@ -66,6 +71,7 @@ public class ConversationManager : Manager<ConversationManager>
         }
     }
 
+    private Dictionary<string, GameObject> preLoadedPrefabs;
 
     // Use this for initialization
     void Start()
@@ -125,6 +131,8 @@ public class ConversationManager : Manager<ConversationManager>
             Debug.LogError("Path " + curEventBasicPath + fileName + " DOES NOT FOUND");
             return;
         }
+        preLoadedPrefabs = new Dictionary<string, GameObject>();
+        preLoadedSprites = new Dictionary<string, Sprite>();
 
         string fileData = asset.text;
 
@@ -175,7 +183,21 @@ public class ConversationManager : Manager<ConversationManager>
 
                         convDatas.Add(aData);
                         break;
+                    case "Prefab":
+                        ConversationFileDataPrefab pData = new ConversationFileDataPrefab();
+                        pData.firstCode = "Prefab";
+                        while (fileData[curIndex] != '<')
+                            curIndex += 1;
+                        pData.prefabName = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+
+                        GameObject obj = Resources.Load<GameObject>("Prefabs/Conversations/Events/" + pData.prefabName);
+                        preLoadedPrefabs.Add(pData.prefabName, obj);
+
+                        convDatas.Add(pData);
+
+                        break;
                     default:
+                        Debug.LogError("CAN'T PARSE TAG " + code);
 
                         break;
                 }
@@ -482,9 +504,17 @@ public class ConversationManager : Manager<ConversationManager>
                             ParseAlignData();
 
                             break;
+                        case "Prefab":
+                            ParsePrefab((ConversationFileDataPrefab)convDatas[curConvIndex]);
+
+                            break;
                         case "End":
                             EventManager.Instance.EventEnded();
                             return;
+                        default:
+                            Debug.LogError("CAN'T Parse Tag " + code);
+
+                            break;
                     }
 
                     curConvIndex += 1;
@@ -603,6 +633,31 @@ public class ConversationManager : Manager<ConversationManager>
         InitConversationDatas();
         ParseConvFile(link);
         ShowText();
+    }
+
+    private void ParsePrefab(ConversationFileDataPrefab data)
+    {
+        GameObject obj;
+        if(preLoadedPrefabs.TryGetValue(data.prefabName, out obj))
+        {
+            GameObject pre = Instantiate(obj);
+            pre.transform.SetParent(UIManager.Instance.Canvas.transform);
+            pre.transform.localPosition = obj.transform.localPosition;
+            pre.transform.localScale = Vector3.one;
+
+            Transform parent = convText.transform.parent;
+            parent.SetSiblingIndex(parent.GetSiblingIndex() + 1);
+
+            parent = talkerText.transform.parent;
+            parent.SetSiblingIndex(parent.GetSiblingIndex() + 1);
+
+            parent = distracterPopup.transform;
+            parent.SetSiblingIndex(parent.GetSiblingIndex() + 1);
+        }
+        else
+        {
+            Debug.LogError("Prefab " + data.prefabName + " Is NOT LOADED");
+        }
     }
 
     private void SetCurEventBasicPath(string eventName)

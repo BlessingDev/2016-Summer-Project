@@ -30,11 +30,12 @@ public class GameEventTestResult : GameEvent
 
     public override void ExecuteEvent()
     {
-        ConversationManager.Instance.StartConversationEvent("TestResult");
+        ConversationManager.Instance.StartConversationEvent("Test Result");
     }
 
     public override void EventEnded()
     {
-        
+        SchedulingManager.Instance.initTime = false;
+        GameManager.Instance.ScheduleExecute();
     }
 }
