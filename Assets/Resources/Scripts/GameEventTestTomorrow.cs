@@ -1,9 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System;
 
-public class GameEventTest : GameEvent
+public class GameEventTestTomorrow : GameEvent
 {
+
+    public override void Init()
+    {
+        eventName = "Test Tomorrow";
+    }
+
     public override bool ConditionCheck()
     {
         Date date = GameManager.Instance.GameDate;

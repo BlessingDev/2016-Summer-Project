@@ -5,6 +5,9 @@ public class PauseExitButton : MonoBehaviour
 {
     public void OnClick()
     {
-        GameManager.Instance.ResumeGame();
+        if (GameManager.Instance.Credit != null)
+            GameManager.Instance.CloseCredit();
+        else
+            GameManager.Instance.ResumeGame();
     }
 }

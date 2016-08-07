@@ -14,6 +14,15 @@ public class SchedulePopup : MonoBehaviour
     private Sprite success;
     private bool reserved = false;
 
+    [SerializeField]
+    private GotoMain gotoMainButton;
+    public GotoMain GotoMainButton
+    {
+        get
+        {
+            return gotoMainButton;
+        }
+    }
 
     // Use this for initialization
     void Start()

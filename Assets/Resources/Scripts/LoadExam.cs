@@ -24,12 +24,44 @@ public class LoadExam : Manager<LoadExam>
     [SerializeField]
     private GameObject preAnswerButtons;
 
+    [SerializeField]
+    private GameObject preProgressText;
+    private Text progressText;
+
     private Dictionary<string, List<ProblemData>> problemDatas;
     private List<ProblemData> selectedProblems;
 
     private bool curAnswer;
     private int curShowIndex = 0;
     private const int PROBLEMS_PER_SUBJECT = 3;
+
+    private int correctNum = 0;
+    public int CorrectNum
+    {
+        get
+        {
+            return correctNum;
+        }
+    }
+    private float scorePerProblem;
+
+    private Date latestTestDate;
+    public Date LatestTestDate
+    {
+        get
+        {
+            return latestTestDate;
+        }
+    }
+
+    public int NumOfWholeProblems
+    {
+        get
+        {
+            return selectedProblems.Count;
+        }
+    }
+    
 
     /*
     // public string[] values; // 문제 짝수 0 포함 정답 그다음 홀수
@@ -47,6 +79,14 @@ public class LoadExam : Manager<LoadExam>
         Instance.Init();
         problemDatas = new Dictionary<string, List<ProblemData>>();
         selectedProblems = new List<ProblemData>();
+
+        if(preOMR == null || preText == null ||
+            preAnswerButtons == null || preProgressText == null)
+        {
+            Debug.LogError("Prefabs ARE NOT READY");
+            enabled = false;
+            return;
+        }
 
         LoadTextFile("Exam");
     }
@@ -80,6 +120,14 @@ public class LoadExam : Manager<LoadExam>
         obj.transform.localPosition = new Vector2(472.7f, 0);
         obj.transform.localScale = Vector3.one;
         omr = obj.GetComponent<Animator>();
+
+        obj = Instantiate(preProgressText);
+        obj.transform.SetParent(UIManager.Instance.Canvas.transform);
+        obj.transform.localPosition = new Vector2(-510, -334);
+        obj.transform.localScale = Vector3.one;
+        progressText = obj.GetComponent<Text>();
+
+        correctNum = 0;
 
         SelectProblems();
         ShowNextProblem();
@@ -176,6 +224,7 @@ public class LoadExam : Manager<LoadExam>
             text.text = selectedProblems[curShowIndex].summary;
             curAnswer = selectedProblems[curShowIndex].answer;
 
+            progressText.text = (curShowIndex + 1).ToString() + "/" + selectedProblems.Count.ToString();
             curShowIndex += 1;
         }
         else
@@ -200,6 +249,8 @@ public class LoadExam : Manager<LoadExam>
                 list.RemoveAt(selectedIdx);
             }
         }
+
+        scorePerProblem = 100f / selectedProblems.Count;
     }
 
     /*
@@ -264,6 +315,11 @@ public class LoadExam : Manager<LoadExam>
             omr.SetBool("X", true);
         }
 
+        if(curAnswer == answer)
+        {
+            correctNum += 1;
+        }
+
         UIManager.Instance.SetEnableTouchLayer("Main", false);
     }
 
@@ -281,6 +337,8 @@ public class LoadExam : Manager<LoadExam>
         Date date = GameManager.Instance.GameDate;
         date.Day += 1;
         GameManager.Instance.GameDate = date;
+        GameManager.Instance.LatestScore += (int)(correctNum * scorePerProblem);
+        latestTestDate = GameManager.Instance.GameDate;
 
         GameManager.Instance.scheduleButtonType = ScheduleButtonType.Schedule;
         SceneManager.Instance.ChangeScene("GameScene");

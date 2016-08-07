@@ -11,6 +11,7 @@ public class GotoMain : MonoBehaviour
     private Sprite normalPushed = null;
     private Sprite reservedNormal = null;
     private Sprite reservedPushed = null;
+    private bool lockButton = false;
 
     void Start()
     {
@@ -26,22 +27,30 @@ public class GotoMain : MonoBehaviour
 
     public void OnClick()
     {
-        if(!reserved)
+        if(!lockButton)
         {
-            image.sprite = reservedNormal;
-            var state = button.spriteState;
-            state.pressedSprite = reservedPushed;
-            button.spriteState = state;
-        }
-        else
-        {
-            image.sprite = normalNormal;
-            var state = button.spriteState;
-            state.pressedSprite = normalPushed;
-            button.spriteState = state;
-        }
+            if (!reserved)
+            {
+                image.sprite = reservedNormal;
+                var state = button.spriteState;
+                state.pressedSprite = reservedPushed;
+                button.spriteState = state;
+            }
+            else
+            {
+                image.sprite = normalNormal;
+                var state = button.spriteState;
+                state.pressedSprite = normalPushed;
+                button.spriteState = state;
+            }
 
-        SchedulingManager.Instance.GotoMainReserved = !reserved;
-        reserved = !reserved;
+            SchedulingManager.Instance.GotoMainReserved = !reserved;
+            reserved = !reserved;
+        }
+    }
+
+    public void LockButton()
+    {
+        lockButton = true;
     }
 }

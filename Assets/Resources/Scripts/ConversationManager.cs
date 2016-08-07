@@ -14,12 +14,16 @@ public class ConversationFileDataConv : ConversationFileDataBase
     public string convSummary;
     public bool hasDistracter;
     public DistracterData distracter;
-
 }
 
 public class ConversationFileDataBackground : ConversationFileDataBase
 {
     public string fileName;
+}
+
+public class ConversationFileDataAlign : ConversationFileDataBase
+{
+    public string align = "";
 }
 
 public struct DistracterData
@@ -61,6 +65,7 @@ public class ConversationManager : Manager<ConversationManager>
             return parameters;
         }
     }
+
 
     // Use this for initialization
     void Start()
@@ -115,6 +120,12 @@ public class ConversationManager : Manager<ConversationManager>
     private void ParseConvFile(string fileName)
     {
         TextAsset asset = Resources.Load<TextAsset>(curEventBasicPath + fileName);
+        if(asset == null)
+        {
+            Debug.LogError("Path " + curEventBasicPath + fileName + " DOES NOT FOUND");
+            return;
+        }
+
         string fileData = asset.text;
 
         int curIndex = 0;
@@ -154,6 +165,18 @@ public class ConversationManager : Manager<ConversationManager>
                         data.firstCode = "End";
 
                         convDatas.Add(data);
+                        break;
+                    case "Align":
+                        ConversationFileDataAlign aData = new ConversationFileDataAlign();
+                        aData.firstCode = "Align";
+                        while (fileData[curIndex] != '<')
+                            curIndex += 1;
+                        aData.align = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+
+                        convDatas.Add(aData);
+                        break;
+                    default:
+
                         break;
                 }
             }
@@ -413,6 +436,20 @@ public class ConversationManager : Manager<ConversationManager>
         return disData;
     }
 
+    private void ParseAlignData()
+    {
+        ConversationFileDataAlign align =
+            (ConversationFileDataAlign)convDatas[curConvIndex];
+        
+        switch(align.align)
+        {
+            case "CenterCenter":
+                convText.Text.alignment = TextAnchor.MiddleCenter;
+
+                break;
+        }
+    }
+
     public void StartConversationEvent(string eventName)
     {
         InitConversationDatas();
@@ -428,39 +465,46 @@ public class ConversationManager : Manager<ConversationManager>
         {
             string code = convDatas[curConvIndex].firstCode;
 
-            while (code != "Conversation" && curConvIndex < convDatas.Count)
+            if(convText.CanBeUsed)
             {
-                switch (code)
+                while (code != "Conversation" && curConvIndex < convDatas.Count)
                 {
-                    case "Background":
-                        ConversationFileDataBackground data = (ConversationFileDataBackground)convDatas[curConvIndex];
-                        Sprite sprite;
-                        preLoadedSprites.TryGetValue(data.fileName, out sprite);
+                    switch (code)
+                    {
+                        case "Background":
+                            ConversationFileDataBackground data = (ConversationFileDataBackground)convDatas[curConvIndex];
+                            Sprite sprite;
+                            preLoadedSprites.TryGetValue(data.fileName, out sprite);
 
-                        background.sprite = sprite;
-                        break;
-                    case "End":
-                        EventManager.Instance.EventEnded();
-                        return;
+                            background.sprite = sprite;
+                            break;
+                        case "Align":
+                            ParseAlignData();
+
+                            break;
+                        case "End":
+                            EventManager.Instance.EventEnded();
+                            return;
+                    }
+
+                    curConvIndex += 1;
+                    code = convDatas[curConvIndex].firstCode;
                 }
 
-                curConvIndex += 1;
-                code = convDatas[curConvIndex].firstCode;
-            }
-
-            ConversationFileDataConv convData = (ConversationFileDataConv)convDatas[curConvIndex];
-            if (convText.setNewString(convData.convSummary))
-            {
-                string talker;
-                talkerName.TryGetValue(convData.talkerCode, out talker);
-                talkerText.text = talker;
-
-                if (convData.hasDistracter)
+                ConversationFileDataConv convData = (ConversationFileDataConv)convDatas[curConvIndex];
+                if (convText.setNewString(convData.convSummary))
                 {
-                    StartCoroutine(CorCheckDistracter(curConvIndex));
-                }
+                    string talker;
+                    talkerName.TryGetValue(convData.talkerCode, out talker);
+                    talkerText.text = talker;
 
-                curConvIndex += 1;
+                    if (convData.hasDistracter)
+                    {
+                        StartCoroutine(CorCheckDistracter(curConvIndex));
+                    }
+
+                    curConvIndex += 1;
+                }
             }
             else
             {
@@ -570,5 +614,18 @@ public class ConversationManager : Manager<ConversationManager>
     {
         convDatas.Clear();
         curConvIndex = 0;
+    }
+
+    public int GetParameter(string parameterName)
+    {
+        int val = -1;
+        if(parameters.TryGetValue(parameterName, out val))
+        {
+            return val;
+        }
+        else
+        {
+            return val;
+        }
     }
 }

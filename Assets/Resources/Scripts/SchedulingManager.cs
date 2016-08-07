@@ -697,4 +697,10 @@ public class SchedulingManager : Manager<SchedulingManager>
             ShowChangeText(cat, addVal);
         }
     }
+
+    public void StopScheduleAndLock()
+    {
+        schedulePopup.GotoMainButton.OnClick();
+        schedulePopup.GotoMainButton.LockButton();
+    }
 }

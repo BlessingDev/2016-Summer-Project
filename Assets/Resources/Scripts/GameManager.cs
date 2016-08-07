@@ -176,6 +176,12 @@ public class GameManager : Manager<GameManager>
                     player.transform.localPosition = Vector3.zero;
                     player.transform.localScale = Vector3.one;
                 }
+
+                if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
+                == SceneManager.Instance.GetLevel("GameScene"))
+                {
+                    InitGameScene();
+                }
             }
 
             return player;
@@ -269,19 +275,62 @@ public class GameManager : Manager<GameManager>
                     player.transform.localPosition = Vector3.zero;
                     player.transform.localScale = Vector3.one;
                 }
+
+                if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
+            == SceneManager.Instance.GetLevel("GameScene"))
+                {
+                    InitGameScene();
+                }
             }
 
             return world;
         }
     }
 
-    int curLevel = -1;
+   static int curLevel = -1;
 
     [SerializeField]
     private GameObject preScheduleButton;
     private Button scheduleButton;
 
     public ScheduleButtonType scheduleButtonType = ScheduleButtonType.Schedule;
+
+    private int latestScore;
+    public int LatestScore
+    {
+        get
+        {
+            return latestScore;
+        }
+        set
+        {
+            testCount += 1;
+            SetParameter("TotalTestScore",
+                GetParameter("TotalTestScore") + value);
+
+            latestScore = value;
+        }
+    }
+
+    private int testCount = 0;
+    public int TestCount
+    {
+        get
+        {
+            return testCount;
+        }
+    }
+
+    [SerializeField]
+    private GameObject preCredit;
+    public GameObject credit;
+    public GameObject Credit
+    {
+        get
+        {
+            return credit;
+        }
+    }
 
     public override void Init()
     {
@@ -322,6 +371,9 @@ public class GameManager : Manager<GameManager>
         parameters.Add("Music", 0);
         parameters.Add("Volunteer", 0);
 
+        parameters.Add("InterviewScore", 0);
+        parameters.Add("TotalTestScore", 0);
+
         parameterLimit = new Dictionary<string, int>();
 
         parameterLimit.Add("Stress", 100);
@@ -354,36 +406,11 @@ public class GameManager : Manager<GameManager>
         gameDate.Day = 2;
        
         if(prePausePopup == null || preStatPopup == null ||
-            preScheduleButton == null || prePlayer == null)
+            preScheduleButton == null || prePlayer == null ||
+            preCredit == null)
         {
             Debug.LogWarning("The Prefab NOT PREPARED");
         }
-
-        if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
-            == SceneManager.Instance.GetLevel("GameScene"))
-        {
-            InitGameScene();
-        }
-    }
-
-    void Update()
-    {
-        if (!pause)
-        {
-            SchedulingManager.Instance.update();
-            EventManager.Instance.update();
-            UIManager.Instance.update();
-            MovementManager.Instance.update();
-            CheckGameOver();
-
-            if(curLevel == SceneManager.Instance.GetLevel("GameScene"))
-                playerPos = Player.transform.localPosition;
-        }
-    }
-
-    public override void OnLevelWasLoaded(int level)
-    {
-        base.OnLevelWasLoaded(level);
 
         if (curLevel != UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex)
         {
@@ -397,15 +424,55 @@ public class GameManager : Manager<GameManager>
                 player.transform.localPosition = Vector3.zero;
                 player.transform.localScale = Vector3.one;
             }
+
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
+            == SceneManager.Instance.GetLevel("GameScene"))
+            {
+                InitGameScene();
+            }
+        }
+    }
+
+    void Update()
+    {
+        if (!pause)
+        {
+            SchedulingManager.Instance.update();
+            EventManager.Instance.update();
+            UIManager.Instance.update();
+            MovementManager.Instance.update();
+
+            if(curLevel == SceneManager.Instance.GetLevel("GameScene"))
+                playerPos = Player.transform.localPosition;
+        }
+    }
+
+    public override void OnLevelWasLoaded(int level)
+    {
+        base.OnLevelWasLoaded(level);
+        scheduleButton = null;
+
+        if (curLevel != UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex)
+        {
+            curLevel = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
+            world = GameObject.Find("World");
+
+            if (curLevel == SceneManager.Instance.GetLevel("GameScene"))
+            {
+                player = Instantiate(prePlayer);
+                player.transform.SetParent(world.transform);
+                player.transform.localPosition = Vector3.zero;
+                player.transform.localScale = Vector3.one;
+            }
+
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
+            == SceneManager.Instance.GetLevel("GameScene"))
+            {
+                InitGameScene();
+            }
         }
 
         animationLayer = new Dictionary<string, List<Animator>>();
-
-        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
-            == SceneManager.Instance.GetLevel("GameScene"))
-        {
-            InitGameScene();
-        }
     }
 
     public void InitGameScene()
@@ -415,9 +482,22 @@ public class GameManager : Manager<GameManager>
             executeSchedule = false;
 
             SchedulingManager.Instance.OpenSchedulePopup();
-
+            EventManager.Instance.InitEvents();
 
             SchedulingManager.Instance.Progressing = true;
+        }
+
+        InitScheduleButton();
+
+        GameObject obj = Player;
+        
+    }
+
+    public void InitScheduleButton()
+    {
+        if(scheduleButton != null)
+        {
+            Destroy(scheduleButton.gameObject);
         }
 
         GameObject obj = Instantiate(preScheduleButton);
@@ -426,28 +506,41 @@ public class GameManager : Manager<GameManager>
         obj.transform.localScale = Vector3.one;
         scheduleButton = obj.GetComponent<Button>();
 
-        switch(scheduleButtonType)
+        switch (scheduleButtonType)
         {
             case ScheduleButtonType.Test:
-                scheduleButton.image.sprite = 
+                scheduleButton.image.sprite =
                     Resources.Load<Sprite>("Sprites/UI/UI_Button_Test_Normal");
                 SpriteState state = scheduleButton.spriteState;
-                state.pressedSprite = Resources.Load<Sprite>("SpritesUI/UI_Button_Test_Pushed");
+                state.pressedSprite = Resources.Load<Sprite>("Sprites/UI/UI_Button_Test_Pushed");
                 scheduleButton.spriteState = state;
 
-                scheduleButton.GetComponent<SceneChangeButton>().sceneName = "ExamScene";
+                scheduleButton.GetComponent<ScheduleButton>().sceneName = "ExamScene";
                 break;
-        }
+            case ScheduleButtonType.Interview:
+                scheduleButton.image.sprite =
+                    Resources.Load<Sprite>("Sprites/UI/UI_Button_Interview_Normal");
+                state = scheduleButton.spriteState;
+                state.pressedSprite = Resources.Load<Sprite>("Sprites/UI/UI_Button_Interview_Pushed");
+                scheduleButton.spriteState = state;
 
-        obj = Player;
-        
-    }
+                ScheduleButton button = scheduleButton.GetComponent<ScheduleButton>();
+                button.sceneName = "Interview";
+                button.isConvEvent = true;
 
-    private void CheckGameOver()
-    {
-        if(gameDate.Year == 4 && gameDate.Month == 2 && gameDate.Day == 15)
-        {
-            GameOver();
+                break;
+            case ScheduleButtonType.End:
+                scheduleButton.image.sprite =
+                    Resources.Load<Sprite>("Sprites/UI/UI_Button_Ending_Normal");
+                state = scheduleButton.spriteState;
+                state.pressedSprite = Resources.Load<Sprite>("Sprites/UI/UI_Button_Ending_Pushed");
+                scheduleButton.spriteState = state;
+
+                button = scheduleButton.GetComponent<ScheduleButton>();
+                button.sceneName = GetGameOverName();
+                button.isConvEvent = true;
+
+                break;
         }
     }
 
@@ -608,8 +701,50 @@ public class GameManager : Manager<GameManager>
         statPopup = null;
     }
 
-    public void GameOver()
+    public bool GameOverCheck()
     {
-        Debug.LogError("Game Overed");
+        if (gameDate.Year == 3 && gameDate.Month == 12 && gameDate.Day == 1)
+            return true;
+        else
+            return false;
+    }
+
+    public string GetGameOverName()
+    {
+        return "Military Ending";
+    }
+
+    public void AddParameter(string name)
+    {
+        if(!parameters.ContainsKey(name))
+        {
+            parameters.Add(name, 0);
+        }
+        else
+        {
+            Debug.LogError("The Parameter is ALREADY EXIST");
+            return;
+        }
+    }
+
+    public void OpenCredit()
+    {
+        UIManager.Instance.SetEnableTouchLayer("PausePopup", false);
+
+        credit = Instantiate(preCredit);
+        credit.transform.SetParent(UIManager.Instance.Canvas.transform);
+        credit.transform.localPosition = Vector2.zero;
+        credit.transform.localScale = Vector3.one;
+    }
+
+    public void CloseCredit()
+    {
+        if(credit != null)
+        {
+            UIManager.Instance.SetEnableTouchLayer("PausePopup", true);
+
+            Destroy(credit);
+            credit = null;
+        }
     }
 }

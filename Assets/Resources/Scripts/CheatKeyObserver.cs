@@ -18,6 +18,15 @@ public class CheatKeyObserver : MonoBehaviour
         {
             AutoSchedule();
         }
+
+        if(Input.GetKeyDown(KeyCode.I))
+        {
+            InterviewDate();
+        }
+        if(Input.GetKeyDown(KeyCode.E))
+        {
+            EndDate();
+        }
 	}
 
     private void AutoSchedule()
@@ -29,5 +38,23 @@ public class CheatKeyObserver : MonoBehaviour
             else
                 SchedulingManager.Instance.SetSchedule(i, ScheduleType.BasicMath);
         }
+    }
+
+    private void InterviewDate()
+    {
+        Date date = GameManager.Instance.GameDate;
+        date.Year = 3;
+        date.Month = 10;
+        date.Day = 29;
+        GameManager.Instance.GameDate = date;
+    }
+
+    private void EndDate()
+    {
+        Date date = GameManager.Instance.GameDate;
+        date.Year = 3;
+        date.Month = 12;
+        date.Day = 1;
+        GameManager.Instance.GameDate = date;
     }
 }

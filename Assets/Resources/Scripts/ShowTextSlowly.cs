@@ -8,6 +8,13 @@ using UnityEngine.UI;
 public class ShowTextSlowly : MonoBehaviour
 {
     private Text text = null;
+    public Text Text
+    {
+        get
+        {
+            return text;
+        }
+    }
     private bool canBeUsed = true;      // 현재 사용가능한가?
     public bool CanBeUsed
     {
