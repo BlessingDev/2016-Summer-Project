@@ -27,6 +27,11 @@ public class CheatKeyObserver : MonoBehaviour
         {
             EndDate();
         }
+
+        if(Input.GetKeyDown(KeyCode.C))
+        {
+            ConvTest();
+        }
 	}
 
     private void AutoSchedule()
@@ -56,5 +61,10 @@ public class CheatKeyObserver : MonoBehaviour
         date.Month = 12;
         date.Day = 1;
         GameManager.Instance.GameDate = date;
+    }
+
+    private void ConvTest()
+    {
+        ConversationManager.Instance.StartConversationEvent("University Select");
     }
 }

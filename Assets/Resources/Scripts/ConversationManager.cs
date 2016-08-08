@@ -31,6 +31,11 @@ public class ConversationFileDataPrefab : ConversationFileDataBase
     public string prefabName;
 }
 
+public class ConversationFileDataFile : ConversationFileDataBase
+{
+    public string fileName;
+}
+
 public struct DistracterData
 {
     public int code;
@@ -40,7 +45,8 @@ public struct DistracterData
 
 public class ConversationManager : Manager<ConversationManager>
 {
-    private const string PARSER_VERSION = "2.0";
+    private HashSet<string> compatitableVersion;
+
     private Dictionary<int, string> talkerName;
     private List<ConversationFileDataBase> convDatas;
     private Dictionary<int, int> selectedDistracter;
@@ -82,11 +88,16 @@ public class ConversationManager : Manager<ConversationManager>
         selectedDistracter = new Dictionary<int, int>();
         preLoadedSprites = new Dictionary<string, Sprite>();
         parameters = new Dictionary<string, int>();
+        compatitableVersion = new HashSet<string>();
 
         talkerName.Add(-1, "");
         talkerName.Add(0, "주인공");
         talkerName.Add(1, "면접관 1");
         talkerName.Add(2, "면접관 2");
+        talkerName.Add(3, "선생님");
+
+        compatitableVersion.Add("2.0");
+        compatitableVersion.Add("2.1");
 
         if (preConversationText == null || preTalkerText == null ||
             preDistracterPopup == null || preDistracterButton == null)
@@ -104,6 +115,8 @@ public class ConversationManager : Manager<ConversationManager>
         if (level == SceneManager.Instance.GetLevel("ConversationScene"))
         {
             UIManager.Instance.OnLevelWasLoaded(level);
+
+            parameters = new Dictionary<string, int>();
 
             GameObject obj = Instantiate(preConversationText);
             obj.transform.SetParent(UIManager.Instance.Canvas.transform);
@@ -143,9 +156,9 @@ public class ConversationManager : Manager<ConversationManager>
         string fileVer = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
 
         // 만약 파서의 버전과 대화 파일의 버전이 다르다면
-        if (fileVer != PARSER_VERSION)
+        if (!compatitableVersion.Contains(fileVer))
         {
-            Debug.LogError("The file " + fileName + " has version " + fileVer + " but parser is version " + PARSER_VERSION);
+            Debug.LogError("The file " + fileName + " has version " + fileVer + " is NOT COMPATITABLE");
             return;
         }
 
@@ -153,61 +166,190 @@ public class ConversationManager : Manager<ConversationManager>
         {
             if (fileData[curIndex] == '<')
             {
+                int startIndex = curIndex;
                 string code = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
 
-                switch (code)
-                {
-                    case "Conversation":
-                        ParseConversation(fileData, curIndex + 1, out curIndex);
-
-                        break;
-                    case "Background":
-                        ParseBackground(fileData, curIndex + 1, out curIndex);
-
-                        break;
-                    case "Parameter":
-                        ParseParameters(fileData, curIndex + 1, out curIndex);
-                        break;
-                    case "End":
-                        ConversationFileDataBase data = new ConversationFileDataBase();
-                        data.firstCode = "End";
-
-                        convDatas.Add(data);
-                        break;
-                    case "Align":
-                        ConversationFileDataAlign aData = new ConversationFileDataAlign();
-                        aData.firstCode = "Align";
-                        while (fileData[curIndex] != '<')
-                            curIndex += 1;
-                        aData.align = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
-
-                        convDatas.Add(aData);
-                        break;
-                    case "Prefab":
-                        ConversationFileDataPrefab pData = new ConversationFileDataPrefab();
-                        pData.firstCode = "Prefab";
-                        while (fileData[curIndex] != '<')
-                            curIndex += 1;
-                        pData.prefabName = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
-
-                        GameObject obj = Resources.Load<GameObject>("Prefabs/Conversations/Events/" + pData.prefabName);
-                        preLoadedPrefabs.Add(pData.prefabName, obj);
-
-                        convDatas.Add(pData);
-
-                        break;
-                    default:
-                        Debug.LogError("CAN'T PARSE TAG " + code);
-
-                        break;
-                }
+                ParseCodes(code, ref fileData, startIndex, curIndex, out curIndex);
             }
 
             curIndex += 1;
         }
     }
+    
+    private void ParseCodes(string code, ref string fileData, int startIndex, int curIndex, out int index)
+    {
 
-    private void ParseParameters(string fileData, int curIndex, out int index)
+        switch (code)
+        {
+            case "Conversation":
+                ParseConversation(fileData, curIndex + 1, out curIndex);
+
+                break;
+            case "Background":
+                ParseBackground(fileData, curIndex + 1, out curIndex);
+
+                break;
+            case "Parameter":
+                ParseParameters(ref fileData, startIndex, curIndex + 1, out curIndex);
+                break;
+            case "End":
+                ConversationFileDataBase data = new ConversationFileDataBase();
+                data.firstCode = "End";
+
+                convDatas.Add(data);
+                break;
+            case "Align":
+                ConversationFileDataAlign aData = new ConversationFileDataAlign();
+                aData.firstCode = "Align";
+                while (fileData[curIndex] != '<')
+                    curIndex += 1;
+                aData.align = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+
+                convDatas.Add(aData);
+                break;
+            case "Prefab":
+                ConversationFileDataPrefab pData = new ConversationFileDataPrefab();
+                pData.firstCode = "Prefab";
+                while (fileData[curIndex] != '<')
+                    curIndex += 1;
+                pData.prefabName = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+
+                GameObject obj = Resources.Load<GameObject>("Prefabs/Conversations/Events/" + pData.prefabName);
+                preLoadedPrefabs.Add(pData.prefabName, obj);
+
+                convDatas.Add(pData);
+
+                break;
+            case "If":
+                ParseCondition(ref fileData, curIndex, out curIndex);
+
+                break;
+            case "File":
+                while (fileData[curIndex] != '<')
+                    curIndex += 1;
+
+                string link = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+
+                ConversationFileDataFile fData = new ConversationFileDataFile();
+                fData.firstCode = "File";
+                fData.fileName = link;
+
+                convDatas.Add(fData);
+                break;
+            default:
+                Debug.LogError("CAN'T PARSE TAG " + code);
+
+                break;
+        }
+
+        index = curIndex;
+    }
+
+    private void ParseCondition(ref string fileData, int curIndex, out int index)
+    {
+        while (fileData[curIndex] != '<')
+            curIndex += 1;
+
+        string ope = "";
+        int startIndex = curIndex;
+        int[] num = new int[2];
+        int idx = 0;
+
+        curIndex += 1;
+        while (fileData[curIndex] != '>')
+        {
+            int curStartIndex = curIndex;
+            
+            while (fileData[curIndex] != '<')
+                curIndex += 1;
+
+            string code = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+
+            switch(code)
+            {
+                case "Parameter":
+                    ParseParameters(ref fileData, curStartIndex, curIndex + 1, out curIndex);
+                    break;
+                case "==":
+                case "!=":
+                case "<=":
+                case ">=":
+                case "<":
+                case ">":
+                    ope = code;
+
+                    break;
+                default:
+                    bool chk = false;
+                    for(int i = 0; i < code.Length; i += 1)
+                    {
+                        if(!char.IsDigit(code[i]))
+                        {
+                            chk = true;
+                            break;
+                        }
+                    }
+
+                    if(!chk)
+                    {
+                        num[idx++] = int.Parse(code);
+                    }
+
+                    break;
+            }
+
+            curIndex += 1;
+        }
+
+        bool chk2 = false; ;
+        switch(ope)
+        {
+            case "==":
+                chk2 = num[0] == num[1];
+                break;
+            case "!=":
+                chk2 = num[0] != num[1];
+                break;
+            case "<=":
+                chk2 = num[0] <= num[1];
+                break;
+            case ">=":
+                chk2 = num[0] >= num[1];
+                break;
+            case "<":
+                chk2 = num[0] < num[1];
+                break;
+            case ">":
+                chk2 = num[0] > num[1];
+                break;
+        }
+
+
+        while (fileData[curIndex] != '<')
+            curIndex += 1;
+
+        curIndex += 1;
+        while (curIndex < fileData.Length && fileData[curIndex] != '>')
+        {
+            int curStartIndex = curIndex;
+
+            while (fileData[curIndex] != '<')
+                curIndex += 1;
+
+            startIndex = curIndex;
+            string code = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+
+            if (chk2)
+                ParseCodes(code, ref fileData, startIndex, curIndex + 1, out curIndex);
+
+            curIndex += 1;
+        }
+
+
+        index = curIndex;
+    }
+
+    private void ParseParameters(ref string fileData, int startIndex, int curIndex, out int index)
     {
         while (fileData[curIndex] != '<')
             curIndex += 1;
@@ -280,6 +422,40 @@ public class ConversationManager : Manager<ConversationManager>
                 parameters.Add(parameterName, val);
 
                 break;
+            case "Get":
+                while (fileData[curIndex] != '<')
+                    curIndex += 1;
+
+                parameterName = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+
+                if (!parameters.ContainsKey(parameterName))
+                {
+                    Debug.LogError("Parameter " + parameterName + " is NOT DIMMED Or IMPORTED");
+                    break;
+                }
+                else
+                {
+                    parameters.TryGetValue(parameterName, out val);
+
+                    string replaceDes = new string(fileData.ToCharArray(), startIndex, curIndex - startIndex + 1);
+
+                    int oriLen = fileData.Length;
+                    fileData = fileData.Replace(replaceDes, "<" + val.ToString() + ">");
+                    curIndex -= curIndex - startIndex + 1;
+
+                }
+
+                break;
+            case "Import":
+                while (fileData[curIndex] != '<')
+                    curIndex += 1;
+
+                parameterName = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+
+                val = (int)GameManager.Instance.GetParameter(parameterName);
+                parameters.Add(parameterName, val);
+
+                break;
         }
 
         index = curIndex;
@@ -348,7 +524,7 @@ public class ConversationManager : Manager<ConversationManager>
 
     }
 
-    private void ParseConvv1(string fileData, int curIndex)
+    /*private void ParseConvv1(string fileData, int curIndex)
     {
         while (curIndex < fileData.Length)
         {
@@ -392,19 +568,20 @@ public class ConversationManager : Manager<ConversationManager>
 
             curIndex += 1;
         }
-    }
+    }*/
 
     private string ReadUntilTagEnd(string data, int startIndex, out int index)
     {
         string str = "";
 
-        while (data[startIndex] != '>')
+        while (data[startIndex] != '>' || (data[startIndex] == '>' && data[startIndex - 1] == '§'))
         {
             str += data[startIndex];
 
             startIndex += 1;
         }
 
+        str = str.Replace("§", "");
         index = startIndex;
         return str;
     }
@@ -439,9 +616,13 @@ public class ConversationManager : Manager<ConversationManager>
             while (data[startIndex] != '<')
                 startIndex += 1;
 
+            startIndex += 1;
             while (data[startIndex] != '>')
             {
                 while (data[startIndex] != '<')
+                    startIndex += 1;
+
+                while (data[startIndex + 1] == '<')
                     startIndex += 1;
 
                 string link = ReadUntilTagEnd(data, startIndex + 1, out startIndex);
@@ -508,6 +689,14 @@ public class ConversationManager : Manager<ConversationManager>
                             ParsePrefab((ConversationFileDataPrefab)convDatas[curConvIndex]);
 
                             break;
+                        case "File":
+                            string link = ((ConversationFileDataFile)convDatas[curConvIndex]).fileName;
+
+                            ParseConvFile(link);
+
+                            InitConversationDatas();
+                            ParseConvFile(link);
+                            return;
                         case "End":
                             EventManager.Instance.EventEnded();
                             return;
@@ -606,32 +795,18 @@ public class ConversationManager : Manager<ConversationManager>
         int curIndex = 0;
         while (result[curIndex] != '<')
             curIndex += 1;
-
-        string link = "";
-        while (curIndex < result.Length - 1 && result[curIndex + 1] != '>')
+        
+        curIndex += 1;
+        while (curIndex < result.Length && result[curIndex] != '>')
         {
-            curIndex += 1;
+            int startIndex = curIndex;
             string code = ReadUntilTagEnd(result, curIndex + 1, out curIndex);
-
-            switch (code)
-            {
-                case "Parameter":
-                    ParseParameters(result, curIndex + 1, out curIndex);
-
-                    break;
-                case "File":
-                    while (result[curIndex] != '<')
-                        curIndex += 1;
-
-                    link = ReadUntilTagEnd(result, curIndex + 1, out curIndex);
-
-                    break;
-            }
+            
+            ParseCodes(code, ref result, startIndex, curIndex + 1, out curIndex);
+            
             curIndex += 1;
         }
 
-        InitConversationDatas();
-        ParseConvFile(link);
         ShowText();
     }
 
@@ -659,7 +834,7 @@ public class ConversationManager : Manager<ConversationManager>
             Debug.LogError("Prefab " + data.prefabName + " Is NOT LOADED");
         }
     }
-
+    
     private void SetCurEventBasicPath(string eventName)
     {
         curEventBasicPath = "Datas/Conversations/" + eventName + "/";

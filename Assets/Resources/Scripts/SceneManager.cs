@@ -12,12 +12,14 @@ public class SceneManager : Manager<SceneManager>
 
         scenes = new Dictionary<string, int>();
 
-        scenes.Add("GameScene", 0);
-        scenes.Add("ScheduleScene", 1);
-        scenes.Add("ShopScene", 2);
-        scenes.Add("ConversationScene", 3);
-        scenes.Add("NoteScene", 4);
-        scenes.Add("ExamScene", 5);
+        scenes.Add("MainScene", 0);
+        scenes.Add("GameScene", 1);
+        scenes.Add("ScheduleScene", 2);
+        scenes.Add("ShopScene", 3);
+        scenes.Add("ConversationScene", 4);
+        scenes.Add("NoteScene", 5);
+        scenes.Add("ExamScene", 6);
+        scenes.Add("AlbumScene", 7);
     }
 	
     public bool ChangeScene(string sceneName)

@@ -37,7 +37,7 @@ public class SchedulingManager : Manager<SchedulingManager>
         }
     }
 
-    private bool progressing;               // 현재 스케줄이 진행되고 있는가
+    static private bool progressing;               // 현재 스케줄이 진행되고 있는가
     public bool Progressing
     {
         get
@@ -161,7 +161,6 @@ public class SchedulingManager : Manager<SchedulingManager>
         }
 
         timeRate = 3f; // 1일은 8초
-        progressing = false;
 
         parameterConversion.Add("Stress", ParameterCategory.Stress);
         parameterConversion.Add("Math", ParameterCategory.Math);
@@ -182,35 +181,35 @@ public class SchedulingManager : Manager<SchedulingManager>
     public override void OnLevelWasLoaded(int level)
     {
         base.OnLevelWasLoaded(level);
-        switch(level)
+        if(level == SceneManager.Instance.GetLevel("ScheduleScene"))
         {
-            case 1:
-                GameObject obj = Instantiate<GameObject>(preOneToTwelve);
-                obj.transform.parent = UIManager.Instance.Canvas.transform;
-                obj.transform.localScale = Vector3.one;
-                obj.transform.localPosition = new Vector2(-320, 0);
-                oneToTwelve = obj.GetComponent<SlotCollector>();
+            progressing = false;
+            GameObject obj = Instantiate<GameObject>(preOneToTwelve);
+            obj.transform.parent = UIManager.Instance.Canvas.transform;
+            obj.transform.localScale = Vector3.one;
+            obj.transform.localPosition = new Vector2(-320, 0);
+            oneToTwelve = obj.GetComponent<SlotCollector>();
 
-                obj = Instantiate<GameObject>(preThirteenToTwentyFour);
-                obj.transform.parent = UIManager.Instance.Canvas.transform;
-                obj.transform.localScale = Vector3.one;
-                obj.transform.localPosition = new Vector2(320, 0);
-                thirteenToTwentyFour = obj.GetComponent<SlotCollector>();
-                thirteenToTwentyFour.Start();
-                thirteenToTwentyFour.SetImagesEnable(false);
+            obj = Instantiate<GameObject>(preThirteenToTwentyFour);
+            obj.transform.parent = UIManager.Instance.Canvas.transform;
+            obj.transform.localScale = Vector3.one;
+            obj.transform.localPosition = new Vector2(320, 0);
+            thirteenToTwentyFour = obj.GetComponent<SlotCollector>();
+            thirteenToTwentyFour.Start();
+            thirteenToTwentyFour.SetImagesEnable(false);
 
-                curPlace = 1;
+            curPlace = 1;
 
-                MakeSteakerBook();
-                break;
-            case 0:
+            MakeSteakerBook();
+        }
+        else if (level == SceneManager.Instance.GetLevel("GameScene"))
+        {
 
-                break;
-            default:
-                progressing = false;
-                schedulePopup = null;
-
-                break;
+        }
+        else
+        {
+            progressing = false;
+            schedulePopup = null;
         }
     }
 

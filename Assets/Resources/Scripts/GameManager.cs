@@ -177,6 +177,13 @@ public class GameManager : Manager<GameManager>
                 }
             }
 
+            if(player == null)
+            {
+                Debug.Log("Player is NULL");
+
+                player = GameObject.Find("Player(Clone)");
+            }
+
             return player;
         }
     }
@@ -203,7 +210,7 @@ public class GameManager : Manager<GameManager>
     private Dictionary<string, float> parameters;
     private Dictionary<string, int> parameterLimit;
 
-    private bool executeSchedule = false;       // 스케쥴 실행이 예약되어 있는가
+    static private bool executeSchedule = false;       // 스케쥴 실행이 예약되어 있는가
     [SerializeField]
     private GameObject prePausePopup = null;
     private GameObject pausePopup = null;
@@ -273,7 +280,7 @@ public class GameManager : Manager<GameManager>
         }
     }
 
-   static int curLevel = -1;
+    static int curLevel = -1;
 
     [SerializeField]
     private GameObject preScheduleButton;
@@ -359,6 +366,7 @@ public class GameManager : Manager<GameManager>
 
         parameters.Add("InterviewScore", 0);
         parameters.Add("TotalTestScore", 0);
+        parameters.Add("Course", 1);
 
         parameterLimit = new Dictionary<string, int>();
 
@@ -453,6 +461,7 @@ public class GameManager : Manager<GameManager>
         player.transform.localPosition = Vector3.zero;
         player.transform.localScale = Vector3.one;
 
+
         if (executeSchedule)
         {
             executeSchedule = false;
@@ -464,8 +473,6 @@ public class GameManager : Manager<GameManager>
         }
 
         InitScheduleButton();
-
-        GameObject obj = Player;
         
     }
 
