@@ -242,7 +242,7 @@ public class GameManager : Manager<GameManager>
     private GameObject preStatPopup = null;
     private GameObject statPopup = null;
 
-    int money = 0;
+    private int money = 0;
     public int Money
     {
         get
@@ -325,6 +325,9 @@ public class GameManager : Manager<GameManager>
         }
     }
 
+    public int course = -1;
+    private List<ScheduleType> selectedSubjects;
+
     public override void Init()
     {
         if (!inited)
@@ -339,6 +342,7 @@ public class GameManager : Manager<GameManager>
         base.Init();
 
         stress = 0;
+        selectedSubjects = new List<ScheduleType>();
         schedulesDic = new Dictionary<ScheduleType, int>();
 
         schedulesDic.Add(ScheduleType.TakeARest, -1);
@@ -366,7 +370,8 @@ public class GameManager : Manager<GameManager>
 
         parameters.Add("InterviewScore", 0);
         parameters.Add("TotalTestScore", 0);
-        parameters.Add("Course", 1);
+        parameters.Add("Course", 0);
+        parameters.Add("Major", 0);
 
         parameterLimit = new Dictionary<string, int>();
 
@@ -723,6 +728,53 @@ public class GameManager : Manager<GameManager>
 
             Destroy(credit);
             credit = null;
+        }
+    }
+
+    public void SetScheduleSteaker(ScheduleType type, int num)
+    {
+        if(schedulesDic.ContainsKey(type))
+        {
+            schedulesDic.ContainsKey(type);
+        }
+
+        schedulesDic.Add(type, num);
+    }
+
+    public bool RemoveScheduleSteaker(ScheduleType type)
+    {
+        if(schedulesDic.ContainsKey(type))
+        {
+            schedulesDic.Remove(type);
+
+            return true;
+        }
+        else
+        {
+            Debug.LogError("Could not FIND " + type + " From steakerDic");
+            return false;
+        }
+    }
+
+    public void SetSelectedSubject(ScheduleType type)
+    {
+        selectedSubjects.Add(type);
+    }
+
+    public void AddSelectedSubjects()
+    {
+        if(course == 1)
+        {
+            schedulesDic.Remove(ScheduleType.Science);
+        }
+        else if (course == 2)
+        {
+            schedulesDic.Remove(ScheduleType.SocialStudy);
+        }
+
+        foreach(var iter in selectedSubjects)
+        {
+            schedulesDic.Add(iter, 8);
         }
     }
 }

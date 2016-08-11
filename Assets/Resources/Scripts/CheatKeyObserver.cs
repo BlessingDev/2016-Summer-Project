@@ -65,6 +65,6 @@ public class CheatKeyObserver : MonoBehaviour
 
     private void ConvTest()
     {
-        ConversationManager.Instance.StartConversationEvent("University Select");
+        ConversationManager.Instance.StartConversationEvent("Course Select");
     }
 }

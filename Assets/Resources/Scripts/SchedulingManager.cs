@@ -357,7 +357,7 @@ public class SchedulingManager : Manager<SchedulingManager>
             case ScheduleType.Art:
             case ScheduleType.Music:
             case ScheduleType.Science:
-            case ScheduleType.Social:
+            case ScheduleType.SocialStudy:
             case ScheduleType.WorldHistory:
                 aniType = 2;
                 break;

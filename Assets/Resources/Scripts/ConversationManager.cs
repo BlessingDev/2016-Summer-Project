@@ -95,6 +95,7 @@ public class ConversationManager : Manager<ConversationManager>
         talkerName.Add(1, "면접관 1");
         talkerName.Add(2, "면접관 2");
         talkerName.Add(3, "선생님");
+        talkerName.Add(4, "모두들");
 
         compatitableVersion.Add("2.0");
         compatitableVersion.Add("2.1");
@@ -115,8 +116,6 @@ public class ConversationManager : Manager<ConversationManager>
         if (level == SceneManager.Instance.GetLevel("ConversationScene"))
         {
             UIManager.Instance.OnLevelWasLoaded(level);
-
-            parameters = new Dictionary<string, int>();
 
             GameObject obj = Instantiate(preConversationText);
             obj.transform.SetParent(UIManager.Instance.Canvas.transform);
@@ -139,13 +138,13 @@ public class ConversationManager : Manager<ConversationManager>
     private void ParseConvFile(string fileName)
     {
         TextAsset asset = Resources.Load<TextAsset>(curEventBasicPath + fileName);
-        if(asset == null)
+        if (asset == null)
         {
             Debug.LogError("Path " + curEventBasicPath + fileName + " DOES NOT FOUND");
             return;
         }
-        preLoadedPrefabs = new Dictionary<string, GameObject>();
-        preLoadedSprites = new Dictionary<string, Sprite>();
+        Debug.Log(fileName + " File Was Opened");
+
 
         string fileData = asset.text;
 
@@ -162,35 +161,59 @@ public class ConversationManager : Manager<ConversationManager>
             return;
         }
 
+        int openedBracket = 0;
+        curIndex += 1;
         while (curIndex < fileData.Length)
         {
-            if (fileData[curIndex] == '<')
+            if (fileData[curIndex] == '>')
             {
-                int startIndex = curIndex;
-                string code = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
-
-                ParseCodes(code, ref fileData, startIndex, curIndex, out curIndex);
+                while (fileData[curIndex] == '>')
+                {
+                    openedBracket -= 1;
+                    curIndex -= 1;
+                }
             }
 
+            if (fileData[curIndex] == '<')
+            {
+                while (fileData[curIndex] == '<')
+                {
+                    openedBracket += 1;
+                    curIndex += 1;
+                }
+
+                int startIndex = curIndex;
+                string code = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+
+                ParseCodes(code, ref fileData, startIndex, curIndex, out curIndex, ref openedBracket);
+            }
+            
             curIndex += 1;
         }
+
+        Debug.Log("opened Brackets is " + openedBracket);
     }
-    
-    private void ParseCodes(string code, ref string fileData, int startIndex, int curIndex, out int index)
+
+    private void ParseCodes(string code, ref string fileData, int startIndex, int curIndex, out int index, ref int openedBracket)
     {
+        while (openedBracket > 0 && fileData[curIndex] == '>')
+        {
+            curIndex += 1;
+            openedBracket -= 1;
+        }
 
         switch (code)
         {
             case "Conversation":
-                ParseConversation(fileData, curIndex + 1, out curIndex);
-
+                ParseConversation(fileData, curIndex, out curIndex, ref openedBracket);
+                
                 break;
             case "Background":
-                ParseBackground(fileData, curIndex + 1, out curIndex);
+                ParseBackground(fileData, curIndex, out curIndex);
 
                 break;
             case "Parameter":
-                ParseParameters(ref fileData, startIndex, curIndex + 1, out curIndex);
+                ParseParameters(ref fileData, startIndex, curIndex, out curIndex, ref openedBracket);
                 break;
             case "End":
                 ConversationFileDataBase data = new ConversationFileDataBase();
@@ -203,7 +226,18 @@ public class ConversationManager : Manager<ConversationManager>
                 aData.firstCode = "Align";
                 while (fileData[curIndex] != '<')
                     curIndex += 1;
-                aData.align = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+                while (fileData[curIndex] == '<')
+                {
+                    curIndex += 1;
+                    openedBracket += 1;
+                }
+
+                aData.align = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+                while (fileData[curIndex] == '>')
+                {
+                    curIndex += 1;
+                    openedBracket -= 1;
+                }
 
                 convDatas.Add(aData);
                 break;
@@ -212,16 +246,32 @@ public class ConversationManager : Manager<ConversationManager>
                 pData.firstCode = "Prefab";
                 while (fileData[curIndex] != '<')
                     curIndex += 1;
-                pData.prefabName = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+                while (fileData[curIndex] == '<')
+                {
+                    curIndex += 1;
+                    openedBracket += 1;
+                }
+
+                pData.prefabName = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+                while (fileData[curIndex] == '>')
+                {
+                    curIndex += 1;
+                    openedBracket -= 1;
+                }
 
                 GameObject obj = Resources.Load<GameObject>("Prefabs/Conversations/Events/" + pData.prefabName);
                 preLoadedPrefabs.Add(pData.prefabName, obj);
 
                 convDatas.Add(pData);
-
+                
                 break;
             case "If":
-                ParseCondition(ref fileData, curIndex, out curIndex);
+                ParseCondition(ref fileData, curIndex, out curIndex, ref openedBracket);
+                
+                break;
+            case "Comp":
+                ParseComp(ref fileData, ref curIndex, startIndex);
+                openedBracket -= 1;
 
                 break;
             case "File":
@@ -237,7 +287,7 @@ public class ConversationManager : Manager<ConversationManager>
                 convDatas.Add(fData);
                 break;
             default:
-                Debug.LogError("CAN'T PARSE TAG " + code);
+                Debug.LogWarning("CAN'T PARSE TAG " + code);
 
                 break;
         }
@@ -245,30 +295,137 @@ public class ConversationManager : Manager<ConversationManager>
         index = curIndex;
     }
 
-    private void ParseCondition(ref string fileData, int curIndex, out int index)
+    private void ParseCondition(ref string fileData, int curIndex, out int index, ref int openedBracket)
     {
+        // <IF'>' 부분에서 들어온다.
+        while (fileData[curIndex] == '>')
+        {
+            curIndex += 1;
+            openedBracket -= 1;
+        }
+        
+
+        int startBucket = openedBracket;
         while (fileData[curIndex] != '<')
             curIndex += 1;
-
-        string ope = "";
-        int startIndex = curIndex;
-        int[] num = new int[2];
-        int idx = 0;
-
-        curIndex += 1;
-        while (fileData[curIndex] != '>')
+        while (fileData[curIndex] == '<')
         {
-            int curStartIndex = curIndex;
-            
+            curIndex += 1;
+            openedBracket += 1;
+        }
+
+        int startIndex = curIndex;
+        do
+        {
+            if (fileData[curIndex] == '>')
+            {
+                while (fileData[curIndex] == '>' && openedBracket > startBucket)
+                {
+                    curIndex += 1;
+                    openedBracket -= 1;
+                }
+            }
+            else if (fileData[curIndex] == '<')
+            {
+                while (fileData[curIndex] == '<')
+                {
+                    curIndex += 1;
+                    openedBracket += 1;
+                }
+
+                int curStartIndex = curIndex;
+                string code = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+
+                ParseCodes(code, ref fileData, curStartIndex, curIndex, out curIndex, ref openedBracket);
+            }
+            else
+            {
+                int curStartIndex = curIndex;
+                string code = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+
+                ParseCodes(code, ref fileData, curStartIndex, curIndex, out curIndex, ref openedBracket);
+            }
+
+        } while (openedBracket > startBucket);
+
+
+
+
+
+        curIndex = startIndex - 1;
+        while (fileData[curIndex] == '<')
+        {
+            curIndex += 1;
+            openedBracket += 1;
+        }
+        
+        string chk = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+        bool chk2 = bool.Parse(chk);
+        while(fileData[curIndex] == '>')
+        {
+            curIndex += 1;
+            openedBracket -= 1;
+        }
+
+        do
+        {
             while (fileData[curIndex] != '<')
                 curIndex += 1;
-
-            string code = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
-
-            switch(code)
+            while (fileData[curIndex] == '<')
             {
+                curIndex += 1;
+                openedBracket += 1;
+            }
+
+            int curStartIndex = curIndex;
+            string code = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+
+            if (chk2)
+                ParseCodes(code, ref fileData, curStartIndex, curIndex, out curIndex, ref openedBracket);
+
+            while (openedBracket > startBucket && fileData[curIndex] == '>')
+            {
+                curIndex += 1;
+                openedBracket -= 1;
+            }
+
+        } while (openedBracket > startBucket);
+
+
+        index = curIndex;
+    }
+
+    private void ParseComp(ref string fileData, ref int curIndex, int startIndex)
+    {
+        // <Comp'>'에서 진입
+
+        int[] num = new int[2];
+        bool[] boolean = new bool[2];
+        string ope = null;
+        int idx = 0;
+
+        while (idx < 2)
+        {
+            while (fileData[curIndex] != '<')
+                curIndex += 1;
+            while (fileData[curIndex] == '<')
+            {
+                curIndex += 1;
+            }
+
+            int curStartIndex = curIndex;
+            string code = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+
+            switch (code)
+            {
+                case "Comp":
+                    ParseComp(ref fileData, ref curIndex, curStartIndex);
+
+                    break;
                 case "Parameter":
-                    ParseParameters(ref fileData, curStartIndex, curIndex + 1, out curIndex);
+                    int bracket = 0;
+                    ParseParameters(ref fileData, curStartIndex, curIndex, out curIndex, ref bracket);
+
                     break;
                 case "==":
                 case "!=":
@@ -276,33 +433,33 @@ public class ConversationManager : Manager<ConversationManager>
                 case ">=":
                 case "<":
                 case ">":
+                case "||":
+                case "&&":
                     ope = code;
 
                     break;
+                case "TRUE":
+                case "FALSE":
+                    boolean[idx++] = bool.Parse(code);
+
+                    break;
                 default:
-                    bool chk = false;
-                    for(int i = 0; i < code.Length; i += 1)
+                    for (int i = 0; i < code.Length; i += 1)
                     {
-                        if(!char.IsDigit(code[i]))
+                        if (!char.IsDigit(code[i]))
                         {
-                            chk = true;
-                            break;
+                            Debug.LogError("Not A Comparable Val");
                         }
                     }
 
-                    if(!chk)
-                    {
-                        num[idx++] = int.Parse(code);
-                    }
+                    num[idx++] = int.Parse(code);
 
                     break;
             }
-
-            curIndex += 1;
         }
 
-        bool chk2 = false; ;
-        switch(ope)
+        bool chk2 = false;
+        switch (ope)
         {
             case "==":
                 chk2 = num[0] == num[1];
@@ -322,53 +479,66 @@ public class ConversationManager : Manager<ConversationManager>
             case ">":
                 chk2 = num[0] > num[1];
                 break;
+            case "&&":
+                chk2 = boolean[0] && boolean[1];
+                break;
+            case "||":
+                chk2 = boolean[0] || boolean[1];
+                break;
         }
 
-
-        while (fileData[curIndex] != '<')
-            curIndex += 1;
-
-        curIndex += 1;
-        while (curIndex < fileData.Length && fileData[curIndex] != '>')
-        {
-            int curStartIndex = curIndex;
-
-            while (fileData[curIndex] != '<')
-                curIndex += 1;
-
-            startIndex = curIndex;
-            string code = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
-
-            if (chk2)
-                ParseCodes(code, ref fileData, startIndex, curIndex + 1, out curIndex);
-
-            curIndex += 1;
-        }
-
-
-        index = curIndex;
+        string replaceStr = new string(fileData.ToCharArray(), startIndex, curIndex - startIndex + 1);
+        fileData = fileData.Replace(replaceStr, "<" + chk2.ToString().ToUpper() + ">");
+        curIndex -= curIndex - startIndex + 1;
     }
 
-    private void ParseParameters(ref string fileData, int startIndex, int curIndex, out int index)
+    private void ParseParameters(ref string fileData, int startIndex, int curIndex, out int index, ref int openedBracket)
     {
         while (fileData[curIndex] != '<')
             curIndex += 1;
+        while (fileData[curIndex] == '<')
+        {
+            curIndex += 1;
+            openedBracket += 1;
+        }
 
-        string order = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+        string order = ReadUntilTagEnd(fileData, curIndex, out curIndex);
 
         switch (order)
         {
             case "Dim":
                 while (fileData[curIndex] != '<')
                     curIndex += 1;
+                while (fileData[curIndex] == '<')
+                {
+                    curIndex += 1;
+                    openedBracket += 1;
+                }
 
-                string parameterName = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+                string parameterName = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+
+                while(fileData[curIndex] == '>')
+                {
+                    curIndex += 1;
+                    openedBracket -= 1;
+                }
 
                 while (fileData[curIndex] != '<')
                     curIndex += 1;
+                while (fileData[curIndex] == '<')
+                {
+                    curIndex += 1;
+                    openedBracket += 1;
+                }
 
-                string valStr = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+                string valStr = ReadUntilTagEnd(fileData, curIndex, out curIndex);
                 int val = int.Parse(valStr);
+
+                while (fileData[curIndex] == '>')
+                {
+                    curIndex += 1;
+                    openedBracket -= 1;
+                }
 
                 parameters.Add(parameterName, val);
 
@@ -376,8 +546,13 @@ public class ConversationManager : Manager<ConversationManager>
             case "Add":
                 while (fileData[curIndex] != '<')
                     curIndex += 1;
+                while (fileData[curIndex] == '<')
+                {
+                    curIndex += 1;
+                    openedBracket += 1;
+                }
 
-                parameterName = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+                parameterName = ReadUntilTagEnd(fileData, curIndex, out curIndex);
 
                 if (!parameters.ContainsKey(parameterName))
                 {
@@ -385,11 +560,28 @@ public class ConversationManager : Manager<ConversationManager>
                     break;
                 }
 
+                while(fileData[curIndex] == '>')
+                {
+                    curIndex += 1;
+                    openedBracket -= 1;
+                }
+
                 while (fileData[curIndex] != '<')
                     curIndex += 1;
+                while (fileData[curIndex] == '<')
+                {
+                    curIndex += 1;
+                    openedBracket += 1;
+                }
 
-                valStr = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+                valStr = ReadUntilTagEnd(fileData, curIndex, out curIndex);
                 val = int.Parse(valStr);
+
+                while (fileData[curIndex] == '>')
+                {
+                    curIndex += 1;
+                    openedBracket -= 1;
+                }
 
                 int curVal = 0;
 
@@ -403,8 +595,13 @@ public class ConversationManager : Manager<ConversationManager>
             case "Set":
                 while (fileData[curIndex] != '<')
                     curIndex += 1;
+                while (fileData[curIndex] == '<')
+                {
+                    curIndex += 1;
+                    openedBracket += 1;
+                }
 
-                parameterName = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+                parameterName = ReadUntilTagEnd(fileData, curIndex, out curIndex);
 
                 if (!parameters.ContainsKey(parameterName))
                 {
@@ -412,21 +609,43 @@ public class ConversationManager : Manager<ConversationManager>
                     break;
                 }
 
+                while (fileData[curIndex] == '>')
+                {
+                    curIndex += 1;
+                    openedBracket -= 1;
+                }
+
                 while (fileData[curIndex] != '<')
                     curIndex += 1;
+                while (fileData[curIndex] == '<')
+                {
+                    curIndex += 1;
+                    openedBracket += 1;
+                }
 
-                valStr = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+                valStr = ReadUntilTagEnd(fileData, curIndex, out curIndex);
                 val = int.Parse(valStr);
 
                 parameters.Remove(parameterName);
                 parameters.Add(parameterName, val);
 
+                while (curIndex < fileData.Length && fileData[curIndex] == '>')
+                {
+                    curIndex += 1;
+                    openedBracket -= 1;
+                }
+
                 break;
             case "Get":
                 while (fileData[curIndex] != '<')
                     curIndex += 1;
+                while (fileData[curIndex] == '<')
+                {
+                    curIndex += 1;
+                    openedBracket += 1;
+                }
 
-                parameterName = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+                parameterName = ReadUntilTagEnd(fileData, curIndex, out curIndex);
 
                 if (!parameters.ContainsKey(parameterName))
                 {
@@ -445,15 +664,32 @@ public class ConversationManager : Manager<ConversationManager>
 
                 }
 
+                while (fileData[curIndex] == '>')
+                {
+                    curIndex += 1;
+                    openedBracket -= 1;
+                }
+
                 break;
             case "Import":
                 while (fileData[curIndex] != '<')
                     curIndex += 1;
+                while (fileData[curIndex] == '<')
+                {
+                    curIndex += 1;
+                    openedBracket += 1;
+                }
 
-                parameterName = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+                parameterName = ReadUntilTagEnd(fileData, curIndex, out curIndex);
 
                 val = (int)GameManager.Instance.GetParameter(parameterName);
                 parameters.Add(parameterName, val);
+
+                while (fileData[curIndex] == '>')
+                {
+                    curIndex += 1;
+                    openedBracket -= 1;
+                }
 
                 break;
         }
@@ -480,48 +716,81 @@ public class ConversationManager : Manager<ConversationManager>
         index = curIndex;
     }
 
-    private void ParseConversation(string fileData, int curIndex, out int outIndex)
+    private void ParseConversation(string fileData, int curIndex, out int outIndex, ref int openedBracket)
     {
+        int startBracket = openedBracket;
         while (fileData[curIndex] != '<')
             curIndex += 1;
+        while (fileData[curIndex] == '<')
+        {
+            openedBracket += 1;
+            curIndex += 1;
+        }
+
         ConversationFileDataConv convData = new ConversationFileDataConv();
         convData.firstCode = "Conversation";
 
-        string code = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
-        convData.talkerCode = int.Parse(code);
-
-        // 종료 코드 검사
-        if (convData.talkerCode == -2)
+        string code = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+        try
         {
-            convDatas.Add(convData);
+            convData.talkerCode = int.Parse(code);
+        }
+        catch
+        {
+            Debug.LogError("talker Code is Wrong");
+        }
 
-            outIndex = curIndex;
-            return;
+        while (fileData[curIndex] == '>')
+        {
+            openedBracket -= 1;
+            curIndex += 1;
+        }
+
+
+        while (fileData[curIndex] != '<')
+            curIndex += 1;
+        while (fileData[curIndex] == '<')
+        {
+            openedBracket += 1;
+            curIndex += 1;
+        }
+
+        string summary = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+        convData.convSummary = summary;
+        while (fileData[curIndex] == '>')
+        {
+            openedBracket -= 1;
+            curIndex += 1;
         }
 
         while (fileData[curIndex] != '<')
             curIndex += 1;
-
-        string summary = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
-        convData.convSummary = summary;
-
-        while (fileData[curIndex] != '<')
+        while (fileData[curIndex] == '<')
+        {
+            openedBracket += 1;
             curIndex += 1;
+        }
 
         // 선택지 여부
-        string distracter = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+        string distracter = ReadUntilTagEnd(fileData, curIndex, out curIndex);
         convData.hasDistracter = bool.Parse(distracter);
+
+        while (fileData[curIndex] == '>')
+        {
+            openedBracket -= 1;
+            curIndex += 1;
+        }
 
         // 선택지 파싱
         if (convData.hasDistracter)
         {
-            DistracterData data = ParseDistracters(fileData, curIndex, out curIndex);
+            DistracterData data = ParseDistracters(fileData, curIndex, out curIndex, ref openedBracket);
             convData.distracter = data;
         }
         convDatas.Add(convData);
 
-        outIndex = curIndex;
 
+        outIndex = curIndex;
     }
 
     /*private void ParseConvv1(string fileData, int curIndex)
@@ -570,36 +839,70 @@ public class ConversationManager : Manager<ConversationManager>
         }
     }*/
 
-    private string ReadUntilTagEnd(string data, int startIndex, out int index)
+    private string ReadUntilTagEnd(string data, int startIndex, out int index, bool removeSequence = true)
     {
         string str = "";
 
-        while (data[startIndex] != '>' || (data[startIndex] == '>' && data[startIndex - 1] == '§'))
+        while ((data[startIndex] != '>' && data[startIndex] != '<') ||
+            (data[startIndex] == '>' && data[startIndex - 1] == '§') ||
+            (data[startIndex] == '<' && data[startIndex - 1] == '§'))
         {
             str += data[startIndex];
 
             startIndex += 1;
         }
 
-        str = str.Replace("§", "");
+        if (removeSequence)
+        {
+            str = str.Replace("§", "");
+        }
+
+        //Debug.Log(str + " is readed");
         index = startIndex;
         return str;
     }
 
-    private DistracterData ParseDistracters(string data, int startIndex, out int index)
+    private DistracterData ParseDistracters(string data, int startIndex, out int index, ref int openedBracket)
     {
         while (data[startIndex] != '<')
             startIndex += 1;
+        while (data[startIndex] == '<')
+        {
+            openedBracket += 1;
+            startIndex += 1;
+        }
 
         DistracterData disData = new DistracterData();
-        string code = ReadUntilTagEnd(data, startIndex + 1, out startIndex);
+        string code = ReadUntilTagEnd(data, startIndex, out startIndex);
         disData.code = int.Parse(code);
+
+        while (data[startIndex] != '>')
+            startIndex += 1;
+        while (data[startIndex] == '>')
+        {
+            openedBracket += 1;
+            startIndex -= 1;
+        }
+
 
         while (data[startIndex] != '<')
             startIndex += 1;
+        while (data[startIndex] == '<')
+        {
+            openedBracket += 1;
+            startIndex += 1;
+        }
 
-        string numStr = ReadUntilTagEnd(data, startIndex + 1, out startIndex);
+        string numStr = ReadUntilTagEnd(data, startIndex, out startIndex);
         int num = int.Parse(numStr);
+
+        while (data[startIndex] != '>')
+            startIndex += 1;
+        while (data[startIndex] == '>')
+        {
+            openedBracket += 1;
+            startIndex -= 1;
+        }
 
         disData.distracters = new string[num];
         disData.results = new string[num];
@@ -608,30 +911,43 @@ public class ConversationManager : Manager<ConversationManager>
         {
             while (data[startIndex] != '<')
                 startIndex += 1;
+            while (data[startIndex] == '<')
+            {
+                openedBracket += 1;
+                startIndex += 1;
+            }
 
-            string summary = ReadUntilTagEnd(data, startIndex + 1, out startIndex);
+            string summary = ReadUntilTagEnd(data, startIndex, out startIndex);
 
             disData.distracters[i] = summary;
 
-            while (data[startIndex] != '<')
-                startIndex += 1;
-
-            startIndex += 1;
-            while (data[startIndex] != '>')
+            int startBracket = openedBracket;
+            do
             {
                 while (data[startIndex] != '<')
+                {
                     startIndex += 1;
+                }
 
-                while (data[startIndex + 1] == '<')
+                while (data[startIndex] == '<')
+                {
+                    disData.results[i] += "<";
+                    openedBracket += 1;
                     startIndex += 1;
+                }
 
-                string link = ReadUntilTagEnd(data, startIndex + 1, out startIndex);
+                string link = ReadUntilTagEnd(data, startIndex, out startIndex, false);
 
-                disData.results[i] += "<" + link + "> ";
+                disData.results[i] += link;
 
-                startIndex += 1;
+                while (openedBracket > startBracket && data[startIndex] == '>')
+                {
+                    disData.results[i] += ">";
+                    openedBracket -= 1;
+                    startIndex += 1;
+                }
             }
-            disData.results[i] += ">";
+            while (openedBracket > startBracket);
         }
 
 
@@ -643,8 +959,8 @@ public class ConversationManager : Manager<ConversationManager>
     {
         ConversationFileDataAlign align =
             (ConversationFileDataAlign)convDatas[curConvIndex];
-        
-        switch(align.align)
+
+        switch (align.align)
         {
             case "CenterCenter":
                 convText.Text.alignment = TextAnchor.MiddleCenter;
@@ -656,6 +972,7 @@ public class ConversationManager : Manager<ConversationManager>
     public void StartConversationEvent(string eventName)
     {
         InitConversationDatas();
+        InitConversationEvent();
         SetCurEventBasicPath(eventName);
         ParseConvFile(eventName + "_Basic");
         SceneManager.Instance.ChangeScene("ConversationScene");
@@ -668,7 +985,7 @@ public class ConversationManager : Manager<ConversationManager>
         {
             string code = convDatas[curConvIndex].firstCode;
 
-            if(convText.CanBeUsed)
+            if (convText.CanBeUsed)
             {
                 while (code != "Conversation" && curConvIndex < convDatas.Count)
                 {
@@ -692,10 +1009,9 @@ public class ConversationManager : Manager<ConversationManager>
                         case "File":
                             string link = ((ConversationFileDataFile)convDatas[curConvIndex]).fileName;
 
-                            ParseConvFile(link);
-
                             InitConversationDatas();
                             ParseConvFile(link);
+                            ShowText();
                             return;
                         case "End":
                             EventManager.Instance.EventEnded();
@@ -783,7 +1099,7 @@ public class ConversationManager : Manager<ConversationManager>
     {
         Debug.Log("Distracter " + distracterNum + " selected");
         UIManager.Instance.SetEnableTouchLayer("Main", true);
-        selectedDistracter.Add(curDistracterCode, distracterNum);
+        //selectedDistracter.Add(curDistracterCode, distracterNum);
         Destroy(distracterPopup);
         distracterPopup = null;
 
@@ -793,19 +1109,29 @@ public class ConversationManager : Manager<ConversationManager>
     private void ParseDistracterResult(string result)
     {
         int curIndex = 0;
-        while (result[curIndex] != '<')
-            curIndex += 1;
-        
-        curIndex += 1;
-        while (curIndex < result.Length && result[curIndex] != '>')
+        int openedBracket = 0;
+
+        do
         {
+            while (result[curIndex] != '<')
+                curIndex += 1;
+
+            while (result[curIndex] == '<')
+            {
+                openedBracket += 1;
+                curIndex += 1;
+            }
             int startIndex = curIndex;
-            string code = ReadUntilTagEnd(result, curIndex + 1, out curIndex);
-            
-            ParseCodes(code, ref result, startIndex, curIndex + 1, out curIndex);
-            
-            curIndex += 1;
-        }
+            string code = ReadUntilTagEnd(result, curIndex, out curIndex);
+
+            ParseCodes(code, ref result, startIndex, curIndex, out curIndex, ref openedBracket);
+
+            while (curIndex < result.Length && result[curIndex] == '>')
+            {
+                openedBracket -= 1;
+                curIndex += 1;
+            }
+        } while (openedBracket > 0 && curIndex < result.Length);
 
         ShowText();
     }
@@ -813,7 +1139,7 @@ public class ConversationManager : Manager<ConversationManager>
     private void ParsePrefab(ConversationFileDataPrefab data)
     {
         GameObject obj;
-        if(preLoadedPrefabs.TryGetValue(data.prefabName, out obj))
+        if (preLoadedPrefabs.TryGetValue(data.prefabName, out obj))
         {
             GameObject pre = Instantiate(obj);
             pre.transform.SetParent(UIManager.Instance.Canvas.transform);
@@ -834,7 +1160,7 @@ public class ConversationManager : Manager<ConversationManager>
             Debug.LogError("Prefab " + data.prefabName + " Is NOT LOADED");
         }
     }
-    
+
     private void SetCurEventBasicPath(string eventName)
     {
         curEventBasicPath = "Datas/Conversations/" + eventName + "/";
@@ -843,13 +1169,15 @@ public class ConversationManager : Manager<ConversationManager>
     public void InitConversationDatas()
     {
         convDatas.Clear();
+        preLoadedPrefabs = new Dictionary<string, GameObject>();
+        preLoadedSprites = new Dictionary<string, Sprite>();
         curConvIndex = 0;
     }
 
     public int GetParameter(string parameterName)
     {
         int val = -1;
-        if(parameters.TryGetValue(parameterName, out val))
+        if (parameters.TryGetValue(parameterName, out val))
         {
             return val;
         }
@@ -857,5 +1185,10 @@ public class ConversationManager : Manager<ConversationManager>
         {
             return val;
         }
+    }
+
+    public void InitConversationEvent()
+    {
+        parameters.Clear();
     }
 }
