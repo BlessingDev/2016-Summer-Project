@@ -92,6 +92,18 @@ public struct Date
             }
         }
     }
+    private int dayOfWeek;
+    public int DayOfWeek
+    {
+        get
+        {
+            return DayOfWeek;
+        }
+        set
+        {
+            dayOfWeek = value;
+        }
+    }
 }
 
 public enum SkinType
@@ -327,6 +339,7 @@ public class GameManager : Manager<GameManager>
 
     public int course = -1;
     private List<ScheduleType> selectedSubjects;
+    private int dayOfWeek = 0;
 
     public override void Init()
     {
@@ -403,6 +416,7 @@ public class GameManager : Manager<GameManager>
         gameDate.Year = 1;
         gameDate.Month = 3;
         gameDate.Day = 2;
+        dayOfWeek = 3;
        
         if(prePausePopup == null || preStatPopup == null ||
             preScheduleButton == null || prePlayer == null ||
