@@ -81,6 +81,8 @@ public class ConversationManager : Manager<ConversationManager>
 
     private int convDataAddIndex = -1;
 
+    private Image talkerBack;
+
     // Use this for initialization
     void Start()
     {
@@ -130,6 +132,7 @@ public class ConversationManager : Manager<ConversationManager>
             obj.transform.localPosition = new Vector2(-465, -44);
             obj.transform.localScale = Vector3.one;
             talkerText = obj.transform.GetChild(0).GetComponent<Text>();
+            talkerBack = obj.GetComponent<Image>();
 
             background = GameObject.Find("Background").GetComponent<SpriteRenderer>();
 
@@ -198,7 +201,7 @@ public class ConversationManager : Manager<ConversationManager>
 
     private void ParseCodes(string code, ref string fileData, int startIndex, ref int curIndex, ref int openedBracket)
     {
-        while (openedBracket > 0 && fileData[curIndex] == '>')
+        while (openedBracket > 0 && curIndex < fileData.Length && fileData[curIndex] == '>')
         {
             curIndex += 1;
             openedBracket -= 1;
@@ -1032,6 +1035,18 @@ public class ConversationManager : Manager<ConversationManager>
                 {
                     string talker;
                     talkerName.TryGetValue(convData.talkerCode, out talker);
+                    if(convData.talkerCode == -1)
+                    {
+                        Color clr = talkerBack.color;
+                        clr.a = 0;
+                        talkerBack.color = clr;
+                    }
+                    else
+                    {
+                        Color clr = talkerBack.color;
+                        clr.a = 1;
+                        talkerBack.color = clr;
+                    }
                     talkerText.text = talker;
 
                     if (convData.hasDistracter)
@@ -1114,23 +1129,30 @@ public class ConversationManager : Manager<ConversationManager>
 
         do
         {
-            while (result[curIndex] != '<')
-                curIndex += 1;
-
-            while (result[curIndex] == '<')
+            while (result[curIndex] != '<' && result[curIndex] != '>')
             {
-                openedBracket += 1;
                 curIndex += 1;
             }
-            int startIndex = curIndex;
-            string code = ReadUntilTagEnd(result, curIndex, out curIndex);
-
-            ParseCodes(code, ref result, startIndex, ref curIndex, ref openedBracket);
-
-            while (curIndex < result.Length && result[curIndex] == '>')
+            if(result[curIndex] == '<')
             {
-                openedBracket -= 1;
-                curIndex += 1;
+                while (result[curIndex] == '<')
+                {
+                    openedBracket += 1;
+                    curIndex += 1;
+                }
+
+                int startIndex = curIndex;
+                string code = ReadUntilTagEnd(result, curIndex, out curIndex);
+
+                ParseCodes(code, ref result, startIndex, ref curIndex, ref openedBracket);
+            }
+            else
+            {
+                while (curIndex < result.Length && result[curIndex] == '>')
+                {
+                    openedBracket -= 1;
+                    curIndex += 1;
+                }
             }
         } while (openedBracket > 0 && curIndex < result.Length);
 

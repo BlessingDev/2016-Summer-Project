@@ -114,6 +114,10 @@ public class SchedulingManager : Manager<SchedulingManager>
 
     public bool initTime = true;
 
+    private Schedule[] reservedSchedule;
+    private Date reservedDate;
+    private bool isReserved;
+    private bool clearSchedule; // 만약 이것이 TRUE이면 날이 끝날 때 모든 스케줄을 지운다.
 
     // Use this for initialization
     void Start ()
@@ -133,6 +137,7 @@ public class SchedulingManager : Manager<SchedulingManager>
             preScheduleDic.Add(schedule.Type, objs[i]);
         }
 
+        reservedSchedule = null;
         scheduleList = new Schedule[24];
         for(int i = 0; i < 24; i += 1)
         {
@@ -169,6 +174,9 @@ public class SchedulingManager : Manager<SchedulingManager>
         parameterConversion.Add("Social", ParameterCategory.Social);
         parameterConversion.Add("Science", ParameterCategory.Science);
         parameterConversion.Add("Art", ParameterCategory.Art);
+
+        isReserved = false;
+        clearSchedule = false;
 
         if(preOneToTwelve == null || preThirteenToTwentyFour == null ||
             preSteakerPlate == null || preSteakerButton == null ||
@@ -317,6 +325,25 @@ public class SchedulingManager : Manager<SchedulingManager>
                 progressing = false;
 
                 CloseSchedulePopup();
+
+                if(reservedSchedule != null)
+                {
+                    ClearSchedule();
+                    for(int i = 0; i < 24; i += 1)
+                    {
+                        scheduleList[i] = reservedSchedule[i];
+                    }
+
+                    reservedSchedule = null;
+                }
+
+                if(clearSchedule)
+                {
+                    clearSchedule = false;
+                    ClearSchedule();
+                }
+
+                //여기에서 예약된 스케줄 처리
             }
 
             curTime = 1;
@@ -324,6 +351,16 @@ public class SchedulingManager : Manager<SchedulingManager>
             Date date = GameManager.Instance.GameDate;
             date.Day += 1;
             GameManager.Instance.GameDate = date;
+
+            if(isReserved)
+            {
+                if(reservedDate == GameManager.Instance.GameDate)
+                {
+                    isReserved = false;
+                    StopScheduleAndLock();
+                    clearSchedule = true;
+                }
+            }
 
             float dif = time - 24;
             time = dif;
@@ -716,6 +753,65 @@ public class SchedulingManager : Manager<SchedulingManager>
         else
         {
             initTime = true;
+        }
+    }
+
+    public void ClearReservedSchedule()
+    {
+        for(int i = 1; i <= 24; i += 1)
+        {
+            if (reservedSchedule[i] != null)
+            {
+                Destroy(reservedSchedule[i]);
+                reservedSchedule[i] = null;
+            }
+        }
+    }
+
+    public void SetReserveDate(Date date)
+    {
+        reservedDate = date;
+    }
+
+    public void SetReservedScheduleAt(ScheduleType type, int time, bool removable = true)
+    {
+        if (reservedSchedule == null)
+        {
+            reservedSchedule = new Schedule[24];
+            for(int i = 0; i < 24; i += 1)
+            {
+                reservedSchedule[i] = null;
+            }
+        }
+
+        GameObject obj;
+        preScheduleDic.TryGetValue(type, out obj);
+        obj = Instantiate(obj);
+        Schedule schedule = obj.GetComponent<Schedule>();
+        schedule.IsRemovable = removable;
+
+        reservedSchedule[time - 1] = schedule;
+    }
+
+    public void ClearSchedule()
+    {
+        for(int i = 1; i <= 24; i += 1)
+        {
+            DeleteAt(i);
+        }
+    }
+
+    private void CheckReservedDate()
+    {
+        if(reservedSchedule != null)
+        {
+            Date gameDate = GameManager.Instance.GameDate;
+            gameDate.Day += 1;
+            if(gameDate == reservedDate)
+            {
+                isReserved = true;
+                StopScheduleAndLock();
+            }
         }
     }
 }

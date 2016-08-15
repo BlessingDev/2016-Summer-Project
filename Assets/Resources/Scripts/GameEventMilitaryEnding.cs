@@ -7,4 +7,6 @@ public class GameEventMilitaryEnding : GameEventEnding {
     {
         eventName = "Military Ending";
     }
+
+
 }

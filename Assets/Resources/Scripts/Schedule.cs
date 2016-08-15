@@ -22,6 +22,7 @@ public enum ScheduleType
     LifeScience,
     EarthScience,
     Chemistry,
+    Movie,
     Volunteer,
     Parttime
 }

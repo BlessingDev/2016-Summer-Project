@@ -8,8 +8,15 @@ public struct Date
     private int year;
     public int Year
     {
-        get;
-        set;
+        get
+        {
+            return year;
+        }
+        set
+        {
+            year = value;
+            SetDayOfWeek();
+        }
     }
     private int month;
     public int Month
@@ -27,6 +34,8 @@ public struct Date
                 year += 1;
                 month = 1;
             }
+
+            SetDayOfWeek();
         }
     }
     private int day;
@@ -48,7 +57,7 @@ public struct Date
                     lastDay = 31;
                     break;
                 case 2:
-                    lastDay = 29;
+                    lastDay = 28;
                     break;
                 case 3:
                     lastDay = 31;
@@ -90,6 +99,8 @@ public struct Date
                 day = 1;
                 Month += 1;
             }
+
+            SetDayOfWeek();
         }
     }
     private int dayOfWeek;
@@ -97,11 +108,93 @@ public struct Date
     {
         get
         {
-            return DayOfWeek;
+            return dayOfWeek;
         }
-        set
+    }
+
+    private void SetDayOfWeek()
+    {
+        int sumDay = 0;
+        sumDay += (year - 1) * 365;
+
+        int monthDay = 0;
+
+        switch (month)
         {
-            dayOfWeek = value;
+            case 1:
+                monthDay = 0;
+                break;
+            case 2:
+                monthDay = 31;
+                break;
+            case 3:
+                monthDay = 59;
+                break;
+            case 4:
+                monthDay = 90;
+                break;
+            case 5:
+                monthDay = 120;
+                break;
+            case 6:
+                monthDay = 151;
+                break;
+            case 7:
+                monthDay = 181;
+                break;
+            case 8:
+                monthDay = 212;
+                break;
+            case 9:
+                monthDay = 243;
+                break;
+            case 10:
+                monthDay = 273;
+                break;
+            case 11:
+                monthDay = 304;
+                break;
+            case 12:
+                monthDay = 334;
+                break;
+            default:
+                Debug.LogWarning("Invalid Month", GameManager.Instance);
+                break;
+        }
+
+        sumDay += monthDay;
+        sumDay += day;
+
+        int last = sumDay % 7;
+
+        dayOfWeek = (5 + last) % 7 + 1;
+    }
+
+    static public bool operator==(Date date1, Date date2)
+    {
+        if (date1.Year == date2.Year &&
+            date1.Month == date2.Month &&
+            date1.Day == date2.Day)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    static public bool operator!=(Date date1, Date date2)
+    {
+        if (date1.Year != date2.Year ||
+            date1.Month != date2.Month ||
+            date1.Day != date2.Day)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 }
