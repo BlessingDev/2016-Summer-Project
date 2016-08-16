@@ -432,7 +432,17 @@ public class GameManager : Manager<GameManager>
 
     public int course = -1;
     private List<ScheduleType> selectedSubjects;
-    private int dayOfWeek = 0;
+
+    public Date latestCompetitionDate;
+    public string latestCompetitionName;
+    private int latestCompetitionResult;
+    public int LatestCompetitionResult
+    {
+        get
+        {
+            return latestCompetitionResult;
+        }
+    }
 
     public override void Init()
     {
@@ -451,14 +461,14 @@ public class GameManager : Manager<GameManager>
         selectedSubjects = new List<ScheduleType>();
         schedulesDic = new Dictionary<ScheduleType, int>();
 
-        schedulesDic.Add(ScheduleType.TakeARest, -1);
+        schedulesDic.Add(ScheduleType.TakeARest, 6);
         schedulesDic.Add(ScheduleType.BasicMath, 4);
         schedulesDic.Add(ScheduleType.English, 4);
         schedulesDic.Add(ScheduleType.Korean, 4);
-        schedulesDic.Add(ScheduleType.Volunteer, 4);
+        schedulesDic.Add(ScheduleType.Volunteer, 2);
         schedulesDic.Add(ScheduleType.Art, 4);
         schedulesDic.Add(ScheduleType.Music, 4);
-        schedulesDic.Add(ScheduleType.Parttime, 4);
+        schedulesDic.Add(ScheduleType.Parttime, 2);
         schedulesDic.Add(ScheduleType.Science, 4);
         schedulesDic.Add(ScheduleType.WorldHistory, 4);
 
@@ -509,7 +519,6 @@ public class GameManager : Manager<GameManager>
         gameDate.Year = 1;
         gameDate.Month = 3;
         gameDate.Day = 2;
-        dayOfWeek = 3;
        
         if(prePausePopup == null || preStatPopup == null ||
             preScheduleButton == null || prePlayer == null ||
@@ -582,6 +591,7 @@ public class GameManager : Manager<GameManager>
             EventManager.Instance.InitEvents();
 
             SchedulingManager.Instance.Progressing = true;
+            UIManager.Instance.SetEnableTouchLayer("Main", false);
         }
 
         InitScheduleButton();
@@ -883,5 +893,113 @@ public class GameManager : Manager<GameManager>
         {
             schedulesDic.Add(iter, 8);
         }
+    }
+
+    public int GetAverageParameter()
+    {
+        int sumDay = 0;
+        sumDay += (gameDate.Year - 1) * 365;
+
+        int monthDay = 0;
+
+        switch (gameDate.Month)
+        {
+            case 1:
+                monthDay = 0;
+                break;
+            case 2:
+                monthDay = 31;
+                break;
+            case 3:
+                monthDay = 59;
+                break;
+            case 4:
+                monthDay = 90;
+                break;
+            case 5:
+                monthDay = 120;
+                break;
+            case 6:
+                monthDay = 151;
+                break;
+            case 7:
+                monthDay = 181;
+                break;
+            case 8:
+                monthDay = 212;
+                break;
+            case 9:
+                monthDay = 243;
+                break;
+            case 10:
+                monthDay = 273;
+                break;
+            case 11:
+                monthDay = 304;
+                break;
+            case 12:
+                monthDay = 334;
+                break;
+            default:
+                Debug.LogWarning("Invalid Month", GameManager.Instance);
+                break;
+        }
+
+        sumDay += monthDay;
+        sumDay += gameDate.Day;
+
+        sumDay -= 62;
+
+        // 하루에 해당 패러미터를 4씩 단련했다고 가정하면
+        return sumDay * 4;
+    }
+
+    public void GradeCompetition(string parameter)
+    {
+        int average = GetAverageParameter();
+        if(average <= GetParameter(parameter))
+        {
+            latestCompetitionResult = 2;
+        }
+        else if(average * 0.66f <= GetParameter(parameter))
+        {
+            latestCompetitionResult = 1;
+        }
+        else
+        {
+            latestCompetitionResult = 0;
+        }
+    }
+
+    public void SetVacationSteaker()
+    {
+        Dictionary<ScheduleType, int> sche = new Dictionary<ScheduleType, int>();
+        foreach(var iter in schedulesDic)
+        {
+            switch(iter.Key)
+            {
+                case ScheduleType.BasicMath:
+                case ScheduleType.Korean:
+                case ScheduleType.English:
+                case ScheduleType.Music:
+                case ScheduleType.Science:
+                case ScheduleType.WorldHistory:
+                case ScheduleType.Art:
+                    sche.Add(iter.Key, 8);
+
+                    break;
+                case ScheduleType.TakeARest:
+                    sche.Add(iter.Key, -1);
+
+                    break;
+                case ScheduleType.Volunteer:
+                case ScheduleType.Parttime:
+                    sche.Add(iter.Key, 6);
+
+                    break;
+            }
+        }
+
+        schedulesDic = sche;
     }
 }

@@ -23,6 +23,7 @@ public enum ScheduleType
     EarthScience,
     Chemistry,
     Movie,
+    MathCompetition,
     Volunteer,
     Parttime
 }

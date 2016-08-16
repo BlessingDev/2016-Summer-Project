@@ -36,6 +36,14 @@ public class ConversationFileDataFile : ConversationFileDataBase
     public string fileName;
 }
 
+public class ConversationFileDataStanding : ConversationFileDataBase
+{
+    public string name;
+    public string order;
+    public int xPos;
+    public string spriteName;
+}
+
 public struct DistracterData
 {
     public int code;
@@ -83,6 +91,9 @@ public class ConversationManager : Manager<ConversationManager>
 
     private Image talkerBack;
 
+    private Dictionary<string, SpriteRenderer> standingCGs;
+    private string eventName;
+
     // Use this for initialization
     void Start()
     {
@@ -93,16 +104,20 @@ public class ConversationManager : Manager<ConversationManager>
         preLoadedSprites = new Dictionary<string, Sprite>();
         parameters = new Dictionary<string, int>();
         compatitableVersion = new HashSet<string>();
+        standingCGs = new Dictionary<string, SpriteRenderer>();
 
         talkerName.Add(-1, "");
-        talkerName.Add(0, "주인공");
+        talkerName.Add(0, "나");
         talkerName.Add(1, "면접관 1");
         talkerName.Add(2, "면접관 2");
         talkerName.Add(3, "선생님");
         talkerName.Add(4, "모두들");
+        talkerName.Add(5, "친구1");
+        talkerName.Add(6, "방송");
 
         compatitableVersion.Add("2.0");
         compatitableVersion.Add("2.1");
+        compatitableVersion.Add("2.23");
 
         if (preConversationText == null || preTalkerText == null ||
             preDistracterPopup == null || preDistracterButton == null)
@@ -136,6 +151,7 @@ public class ConversationManager : Manager<ConversationManager>
 
             background = GameObject.Find("Background").GetComponent<SpriteRenderer>();
 
+            ParseConvFile(eventName + "_Basic");
             ShowText();
         }
     }
@@ -290,6 +306,11 @@ public class ConversationManager : Manager<ConversationManager>
                 fData.fileName = link;
 
                 convDatas.Add(fData);
+                break;
+            case "Standing":
+                ParseStandingCG(fileData, ref curIndex);
+
+                curIndex += 1;
                 break;
             default:
                 Debug.LogWarning("CAN'T PARSE TAG " + code);
@@ -796,6 +817,115 @@ public class ConversationManager : Manager<ConversationManager>
         outIndex = curIndex;
     }
 
+    private void ParseStandingCG(string fileData, ref int curIndex)
+    {
+        while (fileData[curIndex] != '<')
+            curIndex += 1;
+        while(fileData[curIndex] == '<')
+        {
+            curIndex += 1;
+        }
+
+        string code = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+        ConversationFileDataStanding data = new ConversationFileDataStanding();
+        data.firstCode = "Standing";
+        string val;
+
+        switch(code)
+        {
+            case "Set":
+                while (fileData[curIndex] != '<')
+                    curIndex += 1;
+                while (fileData[curIndex] == '<')
+                {
+                    curIndex += 1;
+                }
+                val = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+
+                data.name = val;
+
+                while (fileData[curIndex] != '<')
+                    curIndex += 1;
+                while (fileData[curIndex] == '<')
+                {
+                    curIndex += 1;
+                }
+                val = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+
+                data.xPos = int.Parse(val);
+
+                while (fileData[curIndex] != '<')
+                    curIndex += 1;
+                while (fileData[curIndex] == '<')
+                {
+                    curIndex += 1;
+                }
+                val = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+
+                data.spriteName = val;
+
+                GameObject obj = new GameObject("CG", new System.Type[] { typeof(SpriteRenderer), typeof(Animator) });
+                obj.transform.SetParent(GameManager.Instance.World.transform);
+                obj.transform.localPosition = new Vector2(data.xPos, -360);
+                obj.transform.localScale = new Vector3(1.1f, 1.1f, 1f);
+
+                RuntimeAnimatorController controller = Resources.Load<RuntimeAnimatorController>("Animations/StandingCG/" + data.spriteName);
+                obj.GetComponent<Animator>().runtimeAnimatorController = controller;
+
+                SpriteRenderer renderer = obj.GetComponent<SpriteRenderer>();
+                renderer.sortingLayerName = "Room";
+
+                standingCGs.Add(data.name, renderer);
+
+                break;
+            case "Change":
+                while (fileData[curIndex] != '<')
+                    curIndex += 1;
+                while (fileData[curIndex] == '<')
+                {
+                    curIndex += 1;
+                }
+                val = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+
+                data.name = val;
+
+                while (fileData[curIndex] != '<')
+                    curIndex += 1;
+                while (fileData[curIndex] == '<')
+                {
+                    curIndex += 1;
+                }
+                val = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+
+                data.spriteName = val;
+
+                Sprite sprite = Resources.Load<Sprite>("Sprites/Conversations/StandingCG/" + data.spriteName);
+                preLoadedSprites.Add(data.spriteName, sprite);
+
+                data.order = "Change";
+
+                convDatas.Add(data);
+
+                break;
+            case "Animation":
+                while (fileData[curIndex] != '<')
+                    curIndex += 1;
+                while (fileData[curIndex] == '<')
+                {
+                    curIndex += 1;
+                }
+                val = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+
+                data.name = val;
+
+                data.order = "Animation";
+
+                convDatas.Add(data);
+
+                break;
+        }
+    }
+
     /*private void ParseConvv1(string fileData, int curIndex)
     {
         while (curIndex < fileData.Length)
@@ -969,6 +1099,10 @@ public class ConversationManager : Manager<ConversationManager>
                 convText.Text.alignment = TextAnchor.MiddleCenter;
 
                 break;
+            case "LeftTop":
+                convText.Text.alignment = TextAnchor.UpperLeft;
+
+                break;
         }
     }
 
@@ -977,7 +1111,7 @@ public class ConversationManager : Manager<ConversationManager>
         InitConversationDatas();
         InitConversationEvent();
         SetCurEventBasicPath(eventName);
-        ParseConvFile(eventName + "_Basic");
+        this.eventName = eventName;
         SceneManager.Instance.ChangeScene("ConversationScene");
     }
 
@@ -1017,6 +1151,10 @@ public class ConversationManager : Manager<ConversationManager>
                             ParseConvFile(link);
                             ShowText();
                             return;
+                        case "Standing":
+                            ParseStandingCgExecute((ConversationFileDataStanding)convDatas[curConvIndex]);
+
+                            break;
                         case "End":
                             EventManager.Instance.EventEnded();
                             return;
@@ -1105,7 +1243,7 @@ public class ConversationManager : Manager<ConversationManager>
         }
 
         GridLayoutGroup group = distracterPopup.GetComponent<GridLayoutGroup>();
-        int height = (720 - (int)group.cellSize.y * disData.distracters.Length) / (disData.distracters.Length + 1);
+        int height = (460 - (int)group.cellSize.y * disData.distracters.Length) / (disData.distracters.Length + 1);
 
         group.padding.top = height;
         group.spacing = new Vector2(0, height);
@@ -1184,6 +1322,37 @@ public class ConversationManager : Manager<ConversationManager>
         }
     }
 
+    private void ParseStandingCgExecute(ConversationFileDataStanding data)
+    {
+        SpriteRenderer obj;
+        switch (data.order)
+        {
+            case "Change":
+                if(standingCGs.TryGetValue(data.name, out obj))
+                {
+                    obj.GetComponent<Animator>().enabled = false;
+                    Sprite sprite;
+                    preLoadedSprites.TryGetValue(data.spriteName, out sprite);
+                    obj.sprite = sprite;
+                }
+                else
+                {
+                    Debug.LogError("Could NOT FIND CG Code " + data.name);
+                }
+                break;
+            case "Animation":
+                if (standingCGs.TryGetValue(data.name, out obj))
+                {
+                    obj.GetComponent<Animator>().enabled = true;
+                }
+                else
+                {
+                    Debug.LogError("Could NOT FIND CG Code " + data.name);
+                }
+                break;
+        }
+    }
+
     private void SetCurEventBasicPath(string eventName)
     {
         curEventBasicPath = "Datas/Conversations/" + eventName + "/";
@@ -1213,6 +1382,7 @@ public class ConversationManager : Manager<ConversationManager>
     public void InitConversationEvent()
     {
         parameters.Clear();
+        standingCGs.Clear();
     }
 
     private void AddConvData(ConversationFileDataBase data)

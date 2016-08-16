@@ -27,11 +27,18 @@ public class SchedulingSlot : MonoBehaviour, IDropHandler
             obj.transform.parent = transform;
             obj.transform.localScale = Vector3.one;
             var handler = obj.GetComponent<SchedulingDragHandler>();
+            Destroy(obj.transform.GetChild(0).gameObject);
             GameObject oriHandler;
             SchedulingManager.Instance.CurSteakerDic.TryGetValue(handler.Type, out oriHandler);
-            handler.OriHandler = oriHandler.GetComponent<SchedulingDragHandler>();
-            handler.OriHandler.GetComponent<Steaker>().Num -= 1;
-            Destroy(obj.transform.GetChild(0).gameObject);
+            if (oriHandler != null)
+            {
+                handler.OriHandler = oriHandler.GetComponent<SchedulingDragHandler>();
+                handler.OriHandler.GetComponent<Steaker>().Num -= 1;
+            }
+            else
+            {
+                Debug.LogWarning("Couldn't FIND Steaker For " + handler.Type);
+            }
         }
     }
 

@@ -2,20 +2,20 @@
 using System.Collections;
 using System;
 
-public class GameEventGoOut : GameEvent
+public class GameEventGoOutMovie : GameEvent
 {
     public override void Init()
     {
-        eventName = "Go Out";
+        eventName = "Go Out Movie";
     }
 
     public override bool ConditionCheck()
     {
         if (GameManager.Instance.GameDate.DayOfWeek <= 5)
         {
-            int percent = UnityEngine.Random.Range(1, 100);
+            float percent = UnityEngine.Random.Range(0f, 100f);
 
-            if(percent <= 0.001f)
+            if(percent <= 0.01f)
             {
                 return true;
             }
@@ -26,7 +26,7 @@ public class GameEventGoOut : GameEvent
 
     public override void ExecuteEvent()
     {
-        ConversationManager.Instance.StartConversationEvent("Go Out");
+        ConversationManager.Instance.StartConversationEvent("Go Out Movie");
     }
 
     public override void EventEnded()
@@ -38,6 +38,7 @@ public class GameEventGoOut : GameEvent
             SchedulingManager.Instance.SetReservedScheduleAt(ScheduleType.Movie, 19, false);
             SchedulingManager.Instance.SetReservedScheduleAt(ScheduleType.Movie, 20, false);
 
+            SchedulingManager.Instance.initTime = false;
             int weekDif = 6 - GameManager.Instance.GameDate.DayOfWeek;
             Date date = GameManager.Instance.GameDate;
             date.Day += weekDif;

@@ -65,7 +65,7 @@ public class CheatKeyObserver : MonoBehaviour
 
     private void ConvTest()
     {
-        ConversationManager.Instance.StartConversationEvent("Go Out");
-        EventManager.Instance.SetCurEvent("Go Out");
+        ConversationManager.Instance.StartConversationEvent("Vacation Ceremony");
+        //EventManager.Instance.SetCurEvent("Go Out Movie");
     }
 }

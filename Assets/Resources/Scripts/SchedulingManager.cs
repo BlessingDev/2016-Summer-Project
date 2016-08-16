@@ -46,10 +46,24 @@ public class SchedulingManager : Manager<SchedulingManager>
         }
         set
         {
-            InitTime();
+            if(value)
+            {
+                for (int i = 0; i < 24; i += 1)
+                {
+                    if (scheduleList[i] == null)
+                    {
+                        Debug.LogError("There is Not Schedule");
+                        progressing = false;
+                        return;
+                    }
+                }
 
-            SetCutSceneAnimation();
-            SetParameterBar();
+                InitTime();
+
+                SetCutSceneAnimation();
+                SetParameterBar();
+            }
+
             progressing = value;
         }
     }
@@ -262,7 +276,7 @@ public class SchedulingManager : Manager<SchedulingManager>
             }
             else
             {
-                Debug.LogError("The Schedule DOESN'T EXIST");
+                Debug.LogError("The Schedule" + info.type + " DOESN'T EXIST");
             }
 
             steakerList[i / STEAKER_LIMIT].Add(info);
@@ -317,7 +331,18 @@ public class SchedulingManager : Manager<SchedulingManager>
     void TimeUpdate()
     {
         time += Time.smoothDeltaTime * timeRate;
-        if(time >= 24)
+        CheckReservedDate();
+        if (isReserved)
+        {
+            if (reservedDate == GameManager.Instance.GameDate &&
+                curTime > 1f)
+            {
+                isReserved = false;
+                StopScheduleAndLock();
+                clearSchedule = true;
+            }
+        }
+        if (time >= 24)
         {
             if(gotoMainReserved)
             {
@@ -343,6 +368,7 @@ public class SchedulingManager : Manager<SchedulingManager>
                     ClearSchedule();
                 }
 
+                UIManager.Instance.SetEnableTouchLayer("Main", true);
                 //여기에서 예약된 스케줄 처리
             }
 
@@ -351,16 +377,6 @@ public class SchedulingManager : Manager<SchedulingManager>
             Date date = GameManager.Instance.GameDate;
             date.Day += 1;
             GameManager.Instance.GameDate = date;
-
-            if(isReserved)
-            {
-                if(reservedDate == GameManager.Instance.GameDate)
-                {
-                    isReserved = false;
-                    StopScheduleAndLock();
-                    clearSchedule = true;
-                }
-            }
 
             float dif = time - 24;
             time = dif;
@@ -403,6 +419,9 @@ public class SchedulingManager : Manager<SchedulingManager>
                 break;
             case ScheduleType.Parttime:
                 aniType = 4;
+                break;
+            case ScheduleType.Movie:
+                aniType = 5;
                 break;
         }
 
@@ -793,17 +812,22 @@ public class SchedulingManager : Manager<SchedulingManager>
         reservedSchedule[time - 1] = schedule;
     }
 
+    // 모든 스케줄을 강제적으로 삭제
     public void ClearSchedule()
     {
         for(int i = 1; i <= 24; i += 1)
         {
-            DeleteAt(i);
+            if(scheduleList[i - 1] != null)
+            {
+                Destroy(scheduleList[i - 1].gameObject);
+                scheduleList[i - 1] = null;
+            }
         }
     }
 
     private void CheckReservedDate()
     {
-        if(reservedSchedule != null)
+        if(reservedSchedule != null && !isReserved)
         {
             Date gameDate = GameManager.Instance.GameDate;
             gameDate.Day += 1;

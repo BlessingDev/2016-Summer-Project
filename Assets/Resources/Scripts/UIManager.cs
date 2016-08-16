@@ -15,6 +15,10 @@ public class UIManager : Manager<UIManager>
             {
                 curIndex = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
                 canvas = FindObjectOfType<Canvas>();
+
+                observer = FindObjectOfType<EscObserver>();
+                if (layersDic != null)
+                    layersDic.Clear();
             }
 
             return canvas;
@@ -52,11 +56,12 @@ public class UIManager : Manager<UIManager>
         {
             curIndex = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
             canvas = FindObjectOfType<Canvas>();
+
+            observer = FindObjectOfType<EscObserver>();
+            if (layersDic != null)
+                layersDic.Clear();
         }
 
-        observer = FindObjectOfType<EscObserver>();
-        if(layersDic != null)
-            layersDic.Clear();
     }
 
     // Update is called once per frame
