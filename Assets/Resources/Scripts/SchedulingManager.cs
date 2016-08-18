@@ -131,7 +131,8 @@ public class SchedulingManager : Manager<SchedulingManager>
     private Schedule[] reservedSchedule;
     private Date reservedDate;
     private bool isReserved;
-    private bool clearSchedule; // 만약 이것이 TRUE이면 날이 끝날 때 모든 스케줄을 지운다.
+    public bool clearSchedule; // 만약 이것이 TRUE이면 날이 끝날 때 모든 스케줄을 지운다.
+    public bool stopReserve;
 
     // Use this for initialization
     void Start ()
@@ -191,6 +192,7 @@ public class SchedulingManager : Manager<SchedulingManager>
 
         isReserved = false;
         clearSchedule = false;
+        stopReserve = false;
 
         if(preOneToTwelve == null || preThirteenToTwentyFour == null ||
             preSteakerPlate == null || preSteakerButton == null ||
@@ -342,6 +344,12 @@ public class SchedulingManager : Manager<SchedulingManager>
                 clearSchedule = true;
             }
         }
+        if(stopReserve)
+        {
+            stopReserve = false;
+            StopScheduleAndLock();
+        }
+
         if (time >= 24)
         {
             if(gotoMainReserved)
@@ -692,7 +700,7 @@ public class SchedulingManager : Manager<SchedulingManager>
         }
     }
 
-    public bool ShowChangeText(ParameterCategory category, float val)
+    private bool ShowChangeText(ParameterCategory category, float val)
     {
         if(parameters.ContainsKey(category))
         {
@@ -743,7 +751,7 @@ public class SchedulingManager : Manager<SchedulingManager>
         }
     }
 
-    public void AddParameter(string parameterName, float addVal)
+    public void AddParameterAndShowText(string parameterName, float addVal)
     {
         GameManager.Instance.SetParameter(parameterName,
             GameManager.Instance.GetParameter(parameterName) + addVal);
@@ -751,7 +759,7 @@ public class SchedulingManager : Manager<SchedulingManager>
         ParameterCategory cat;
         if(parameterConversion.TryGetValue(parameterName, out cat))
         {
-            ShowChangeText(cat, addVal);
+            ShowChangeText(cat, (float)System.Math.Round(addVal, 1));
         }
     }
 
@@ -837,5 +845,12 @@ public class SchedulingManager : Manager<SchedulingManager>
                 StopScheduleAndLock();
             }
         }
+    }
+
+    public void AddGameTime(int val)
+    {
+        time += val;
+        befTime += val;
+        curTime += val;
     }
 }

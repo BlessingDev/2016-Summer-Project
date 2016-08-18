@@ -6,7 +6,7 @@ public class GameEventMathCompetition : GameEvent
 {
     public override void Init()
     {
-        name = "Math Competition";
+        eventName = "Math Competition";
     }
 
     public override bool ConditionCheck()

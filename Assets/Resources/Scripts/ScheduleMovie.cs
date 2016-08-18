@@ -15,6 +15,6 @@ public class ScheduleMovie : Schedule
     {
         int val = UnityEngine.Random.Range(-3, -6);
 
-        SchedulingManager.Instance.AddParameter("Stress", val);
+        SchedulingManager.Instance.AddParameterAndShowText("Stress", val);
     }
 }

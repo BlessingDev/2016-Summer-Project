@@ -6,14 +6,16 @@ public class GameEventVacationCeremony : GameEvent
 {
     public override void Init()
     {
-        name = "Vacation Ceremony";
+        eventName = "Vacation Ceremony";
     }
 
     public override bool ConditionCheck()
     {
         Date gameDate = GameManager.Instance.GameDate;
 
-        if((gameDate.Month == 7 && gameDate.Day == 15))
+        if((gameDate.Month == 7 && gameDate.Day == 15) &&
+            SchedulingManager.Instance.GameTime >= 5 && 
+            SchedulingManager.Instance.GameTime <= 6)
         {
             return true;
         }
@@ -28,6 +30,9 @@ public class GameEventVacationCeremony : GameEvent
 
     public override void EventEnded()
     {
-        GameManager.Instance.SetVacationSteaker();   
+        SchedulingManager.Instance.initTime = false;
+        SchedulingManager.Instance.AddGameTime(1);
+        GameManager.Instance.SetVacationSteaker();
+        GameManager.Instance.ScheduleExecute();
     }
 }

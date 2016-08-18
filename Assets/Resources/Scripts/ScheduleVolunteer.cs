@@ -15,20 +15,13 @@ public class ScheduleVolunteer : Schedule
     public override void Effect(Schedule obj)
     {
         Debug.Log("Volunteer Effected");
-        GameManager.Instance.SetParameter("Stress",
-            GameManager.Instance.GetParameter("Stress") + 2);
-        GameManager.Instance.SetParameter("Volunteer",
-            GameManager.Instance.GetParameter("Volunteer") + 1);
-
-        SchedulingManager.Instance.ShowChangeText(ParameterCategory.Stress, 2);
-        SchedulingManager.Instance.ShowChangeText(ParameterCategory.Volunteer, 1);
+        SchedulingManager.Instance.AddParameterAndShowText("Stress", 2);
+        SchedulingManager.Instance.AddParameterAndShowText("Volunteer", 1);
 
     }
 
     public override void Failed()
     {
-        GameManager.Instance.SetParameter("Stress",
-           GameManager.Instance.GetParameter("Stress") + 2);
-        SchedulingManager.Instance.ShowChangeText(ParameterCategory.Stress, 2);
+        SchedulingManager.Instance.AddParameterAndShowText("Stress", 2);
     }
 }

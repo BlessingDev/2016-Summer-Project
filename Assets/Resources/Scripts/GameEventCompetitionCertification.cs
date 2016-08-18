@@ -8,7 +8,7 @@ public class GameEventCompetitionCertification : GameEvent
 
     public override void Init()
     {
-        name = "Competition Certification";
+        eventName = "Competition Certification";
     }
 
     public override bool ConditionCheck()

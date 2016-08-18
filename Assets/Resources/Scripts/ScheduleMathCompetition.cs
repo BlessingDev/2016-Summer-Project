@@ -15,6 +15,6 @@ public class ScheduleMathCompetition : Schedule
     {
         int val = UnityEngine.Random.Range(1, 5);
 
-        SchedulingManager.Instance.AddParameter("Stress", val);
+        SchedulingManager.Instance.AddParameterAndShowText("Stress", val);
     }
 }

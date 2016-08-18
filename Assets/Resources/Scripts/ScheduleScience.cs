@@ -14,12 +14,12 @@ public class ScheduleScience : Schedule {
 
     public override void Effect(Schedule obj)
     {
-        SchedulingManager.Instance.AddParameter("Stress", 0.7f);
-        SchedulingManager.Instance.AddParameter("Science", 1f);
+        SchedulingManager.Instance.AddParameterAndShowText("Stress", 0.7f);
+        SchedulingManager.Instance.AddParameterAndShowText("Science", 1f);
     }
 
     public override void Failed()
     {
-        SchedulingManager.Instance.AddParameter("Stress", 1f);
+        SchedulingManager.Instance.AddParameterAndShowText("Stress", 1f);
     }
 }

@@ -25,7 +25,12 @@ public enum ScheduleType
     Movie,
     MathCompetition,
     Volunteer,
-    Parttime
+    Parttime,
+    ReadingAndGrammar,
+    DifferencialAndIntegral,
+    ProbabilityAndStatistics,
+    Classic,
+    EnglishReadingAndWriting,
 }
 
 public abstract class Schedule : MonoBehaviour

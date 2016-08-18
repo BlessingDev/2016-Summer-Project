@@ -30,7 +30,20 @@ public class CheatKeyObserver : MonoBehaviour
 
         if(Input.GetKeyDown(KeyCode.C))
         {
-            ConvTest();
+            CourseSelect();
+        }
+        if(Input.GetKeyDown(KeyCode.O))
+        {
+            OpeningCeremony();
+        }
+        if(Input.GetKey(KeyCode.G))
+        {
+            GoOutEvent();
+        }
+
+        if(Input.GetKey(KeyCode.T))
+        {
+            ConversationManager.Instance.StartConversationEvent("DarkUnion");
         }
 	}
 
@@ -63,9 +76,24 @@ public class CheatKeyObserver : MonoBehaviour
         GameManager.Instance.GameDate = date;
     }
 
-    private void ConvTest()
+    private void CourseSelect()
     {
-        ConversationManager.Instance.StartConversationEvent("Vacation Ceremony");
-        //EventManager.Instance.SetCurEvent("Go Out Movie");
+        ConversationManager.Instance.StartConversationEvent("Course Select");
+        EventManager.Instance.SetCurEvent("Course Select");
+    }
+
+    private void OpeningCeremony()
+    {
+        ConversationManager.Instance.StartConversationEvent("Opening Ceremony");
+        GameManager.Instance.GameDate = new Date(2, 3, 2);
+        SchedulingManager.Instance.InitTime();
+        SchedulingManager.Instance.AddGameTime(5);
+        EventManager.Instance.SetCurEvent("Opening Ceremony");
+    }
+
+    private void GoOutEvent()
+    {
+        ConversationManager.Instance.StartConversationEvent("Go Out Movie");
+        EventManager.Instance.SetCurEvent("Go Out Movie");
     }
 }

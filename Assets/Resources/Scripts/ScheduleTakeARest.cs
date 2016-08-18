@@ -14,8 +14,7 @@ public class ScheduleTakeARest : Schedule
 
     public override void Effect(Schedule obj)
     {
-        GameManager.Instance.SetParameter("Stress", GameManager.Instance.GetParameter("Stress") - 1);
-        SchedulingManager.Instance.ShowChangeText(ParameterCategory.Stress, -1);
+        SchedulingManager.Instance.AddParameterAndShowText("Stress", -1);
         Debug.Log("Take a rest Effected!");
     }
 }

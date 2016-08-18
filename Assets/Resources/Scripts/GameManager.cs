@@ -90,7 +90,9 @@ public struct Date
                     lastDay = 31;
                     break;
                 default:
-                    Debug.LogError("Invalid Month", GameManager.Instance);
+                    Debug.LogWarning("Invalid Month " + month, GameManager.Instance);
+                    month = 1;
+                    Day = value;
                     break;
             }
 
@@ -168,6 +170,16 @@ public struct Date
         int last = sumDay % 7;
 
         dayOfWeek = (5 + last) % 7 + 1;
+    }
+    
+    public Date(int year, int month, int day)
+    {
+        this.year = year;
+        this.month = month;
+        this.day = day;
+        this.dayOfWeek = 0;
+
+        SetDayOfWeek();
     }
 
     static public bool operator==(Date date1, Date date2)
@@ -811,6 +823,7 @@ public class GameManager : Manager<GameManager>
 
     public string GetGameOverName()
     {
+        // 게임오버 연동할 때 여기에서
         return "Military Ending";
     }
 
@@ -893,6 +906,25 @@ public class GameManager : Manager<GameManager>
         {
             schedulesDic.Add(iter, 8);
         }
+    }
+
+    public void SetFirstGradeSecondSubjects()
+    {
+        schedulesDic.Remove(ScheduleType.Korean);
+        schedulesDic.Add(ScheduleType.ReadingAndGrammar, 8);
+    }
+
+    public void SetSecondGradeFirstSubjects()
+    {
+        AddSelectedSubjects();
+        schedulesDic.Remove(ScheduleType.ReadingAndGrammar);
+        schedulesDic.Remove(ScheduleType.BasicMath);
+        schedulesDic.Remove(ScheduleType.English);
+
+        schedulesDic.Add(ScheduleType.DifferencialAndIntegral, 8);
+        schedulesDic.Add(ScheduleType.ProbabilityAndStatistics, 8);
+        schedulesDic.Add(ScheduleType.Classic, 8);
+        schedulesDic.Add(ScheduleType.EnglishReadingAndWriting, 8);
     }
 
     public int GetAverageParameter()
@@ -1001,5 +1033,85 @@ public class GameManager : Manager<GameManager>
         }
 
         schedulesDic = sche;
+    }
+
+    public void SetOpeningSteaker()
+    {
+        Dictionary<ScheduleType, int> sche = new Dictionary<ScheduleType, int>();
+        foreach (var iter in schedulesDic)
+        {
+            switch (iter.Key)
+            {
+                case ScheduleType.BasicMath:
+                case ScheduleType.Korean:
+                case ScheduleType.English:
+                case ScheduleType.Music:
+                case ScheduleType.Science:
+                case ScheduleType.WorldHistory:
+                case ScheduleType.Art:
+                    sche.Add(iter.Key, 8);
+
+                    break;
+                case ScheduleType.TakeARest:
+                    sche.Add(iter.Key, 6);
+
+                    break;
+                case ScheduleType.Volunteer:
+                case ScheduleType.Parttime:
+                    sche.Add(iter.Key, 2);
+
+                    break;
+            }
+        }
+
+        schedulesDic = sche;
+    }
+
+    public float GetParameterBonus(string parameterName)
+    {
+        float bonus = 1f;
+        switch(parameterName)
+        {
+            case "Stress":
+                switch(curSkinNames[(int)SkinType.Bed])
+                {
+                    case "더나은침대":
+                        bonus += 0.1f;
+                        break;
+                    case "Map_Bed_3":
+                        bonus += 0.25f;
+                        break;
+                    case "Map_Bed_4":
+                        bonus += 0.4f;
+                        break;
+                }
+                break;
+            case "Math":
+            case "English":
+            case "Korean":
+            case "Science":
+            case "Social":
+                if (SchedulingManager.Instance.StudyMode == 1)
+                    bonus -= 0.1f;
+                else if (SchedulingManager.Instance.StudyMode == 3)
+                    bonus += 0.1f;
+
+                switch(curSkinNames[(int)SkinType.Desk])
+                {
+                    case "Map_Desk_3":
+                        bonus += 0.05f;
+
+                        break;
+                    case "더나은테이블":
+                        bonus += 0.15f;
+
+                        break;
+                }
+                break;
+        }
+
+        
+
+        return bonus;
     }
 }

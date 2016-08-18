@@ -15,12 +15,12 @@ public class ScheduleArt : Schedule
 
     public override void Effect(Schedule obj)
     {
-        SchedulingManager.Instance.AddParameter("Art", 1f);
-        SchedulingManager.Instance.AddParameter("Stress", 0.7f);
+        SchedulingManager.Instance.AddParameterAndShowText("Art", 1f);
+        SchedulingManager.Instance.AddParameterAndShowText("Stress", 0.7f);
     }
 
     public override void Failed()
     {
-        SchedulingManager.Instance.AddParameter("Stress", 1f);
+        SchedulingManager.Instance.AddParameterAndShowText("Stress", 1f);
     }
 }

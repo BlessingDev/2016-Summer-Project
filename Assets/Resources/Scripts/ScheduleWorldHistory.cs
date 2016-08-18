@@ -14,19 +14,12 @@ public class ScheduleWorldHistory : Schedule
 
     public override void Effect(Schedule obj)
     {
-        GameManager.Instance.SetParameter("Stress",
-            GameManager.Instance.GetParameter("Stress") + 0.7f);
-        GameManager.Instance.SetParameter("Social",
-            GameManager.Instance.GetParameter("Social") + 1f);
-
-        SchedulingManager.Instance.ShowChangeText(ParameterCategory.Stress, 0.7f);
-        SchedulingManager.Instance.ShowChangeText(ParameterCategory.Social, 1f);
+        SchedulingManager.Instance.AddParameterAndShowText("Stress", 0.7f);
+        SchedulingManager.Instance.AddParameterAndShowText("Social", 1f);
     }
 
     public override void Failed()
     {
-        GameManager.Instance.SetParameter("Stress",
-             GameManager.Instance.GetParameter("Stress") + 1);
-        SchedulingManager.Instance.ShowChangeText(ParameterCategory.Stress, 1);
+        SchedulingManager.Instance.AddParameterAndShowText("Stress", 1);
     }
 }

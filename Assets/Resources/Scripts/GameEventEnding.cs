@@ -4,6 +4,11 @@ using System;
 
 public class GameEventEnding : GameEvent
 {
+    public override void Init()
+    {
+        eventName = "Ending";
+    }
+
     public override bool ConditionCheck()
     {
         return false;

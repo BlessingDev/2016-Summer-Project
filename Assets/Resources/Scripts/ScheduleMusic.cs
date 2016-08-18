@@ -14,12 +14,12 @@ public class ScheduleMusic : Schedule
 
     public override void Effect(Schedule obj)
     {
-        SchedulingManager.Instance.AddParameter("Stress", 0.7f);
-        SchedulingManager.Instance.AddParameter("Music", 1f);
+        SchedulingManager.Instance.AddParameterAndShowText("Stress", 0.7f);
+        SchedulingManager.Instance.AddParameterAndShowText("Music", 1f);
     }
 
     public override void Failed()
     {
-        SchedulingManager.Instance.AddParameter("Stress", 1);
+        SchedulingManager.Instance.AddParameterAndShowText("Stress", 1);
     }
 }
