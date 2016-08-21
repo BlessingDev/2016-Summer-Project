@@ -18,14 +18,18 @@ public class SyncParameter : MonoBehaviour
             enabled = true;
         }
 
-        float check = GameManager.Instance.GetParameter(parameterName);
+        float val;
+        GameManager.Instance.GetParameter(parameterName, out val);
 
-        bar.SetValueImmediately(GameManager.Instance.GetParameter(parameterName));
+        bar.SetValueImmediately(val);
     }
 
     // Update is called once per frame
     void Update ()
     {
-        bar.SetValueImmediately(GameManager.Instance.GetParameter(parameterName));
+        float val;
+        GameManager.Instance.GetParameter(parameterName, out val);
+
+        bar.SetValueImmediately(val);
 	}
 }

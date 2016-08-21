@@ -114,6 +114,7 @@ public class ConversationManager : Manager<ConversationManager>
         talkerName.Add(4, "모두들");
         talkerName.Add(5, "친구1");
         talkerName.Add(6, "방송");
+        talkerName.Add(7, "후보1");
 
         compatitableVersion.Add("2.0");
         compatitableVersion.Add("2.1");
@@ -186,15 +187,6 @@ public class ConversationManager : Manager<ConversationManager>
         curIndex += 1;
         while (curIndex < fileData.Length)
         {
-            if (fileData[curIndex] == '>')
-            {
-                while (fileData[curIndex] == '>')
-                {
-                    openedBracket -= 1;
-                    curIndex -= 1;
-                }
-            }
-
             if (fileData[curIndex] == '<')
             {
                 while (fileData[curIndex] == '<')
@@ -207,6 +199,15 @@ public class ConversationManager : Manager<ConversationManager>
                 string code = ReadUntilTagEnd(fileData, curIndex, out curIndex);
 
                 ParseCodes(code, ref fileData, startIndex, ref curIndex, ref openedBracket);
+            }
+
+            if (curIndex < fileData.Length &&  fileData[curIndex] == '>')
+            {
+                while (curIndex < fileData.Length && fileData[curIndex] == '>')
+                {
+                    openedBracket -= 1;
+                    curIndex += 1;
+                }
             }
 
             curIndex += 1;
@@ -226,7 +227,7 @@ public class ConversationManager : Manager<ConversationManager>
         switch (code)
         {
             case "Conversation":
-                ParseConversation(fileData, curIndex, out curIndex, ref openedBracket);
+                ParseConversation(ref fileData, curIndex, out curIndex, ref openedBracket);
 
                 break;
             case "Background":
@@ -292,6 +293,7 @@ public class ConversationManager : Manager<ConversationManager>
                 break;
             case "Comp":
                 ParseComp(ref fileData, ref curIndex, startIndex);
+                //Debug.Log("str " + fileData[curIndex - 1] + fileData[curIndex] + fileData[curIndex + 1]);
                 openedBracket -= 1;
 
                 break;
@@ -306,6 +308,8 @@ public class ConversationManager : Manager<ConversationManager>
                 fData.fileName = link;
 
                 convDatas.Add(fData);
+
+                curIndex += 1;
                 break;
             case "Standing":
                 ParseStandingCG(fileData, ref curIndex);
@@ -429,7 +433,7 @@ public class ConversationManager : Manager<ConversationManager>
 
     private void ParseComp(ref string fileData, ref int curIndex, int startIndex)
     {
-        // <Comp'>'에서 진입
+        // <Comp>' '에서 진입
 
         int[] num = new int[2];
         bool[] boolean = new bool[2];
@@ -550,8 +554,8 @@ public class ConversationManager : Manager<ConversationManager>
                 break;
         }
 
-        replaceStr = new string(fileData.ToCharArray(), startIndex, curIndex - startIndex + 1);
-        fileData = fileData.Replace(replaceStr, "<" + chk2.ToString().ToUpper() + ">");
+        fileData = fileData.Remove(startIndex, curIndex - startIndex + 1);
+        fileData = fileData.Insert(startIndex, "<" + chk2.ToString().ToUpper() + ">");
         curIndex -= curIndex - startIndex + 1;
     }
 
@@ -590,20 +594,22 @@ public class ConversationManager : Manager<ConversationManager>
 
                 code = ReadUntilTagEnd(fileData, curIndex, out curIndex);
                 int end = int.Parse(code);
-
-                int dif = curIndex - startIndex + 1;
-
-                replaceStr = new string(fileData.ToCharArray(), startIndex, dif);
-
-                fileData = fileData.Replace(replaceStr, "<" + UnityEngine.Random.Range(start, end) + ">");
+                
+                fileData = fileData.Remove(startIndex - 1, curIndex - startIndex + 2);
+                fileData = fileData.Insert(startIndex - 1, "<" + UnityEngine.Random.Range(start, end) + ">");
 
                 curIndex = startIndex;
+
+                break;
+            case "Parameter":
+                int openedBracket = 0;
+                ParseParameters(ref fileData, startIndex, curIndex, out curIndex, ref openedBracket);
 
                 break;
             default:
                 for (int i = 0; i < code.Length; i += 1)
                 {
-                    if (!char.IsDigit(code[i]))
+                    if (!char.IsDigit(code[i]) && code[i] != '-')
                     {
                         Debug.LogError("Not A Comparable Val " + code);
                     }
@@ -611,6 +617,8 @@ public class ConversationManager : Manager<ConversationManager>
 
                 break;
         }
+
+        curIndex = startIndex;
     }
 
     private void ParseParameters(ref string fileData, int startIndex, int curIndex, out int index, ref int openedBracket)
@@ -624,6 +632,7 @@ public class ConversationManager : Manager<ConversationManager>
         }
 
         string order = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+        float fVal;
 
         switch (order)
         {
@@ -721,6 +730,8 @@ public class ConversationManager : Manager<ConversationManager>
                 parameters.Remove(parameterName);
                 parameters.Add(parameterName, val);
 
+                Debug.Log(parameterName + " parameter set " + val);
+
                 while (curIndex < fileData.Length && fileData[curIndex] == '>')
                 {
                     curIndex += 1;
@@ -747,11 +758,10 @@ public class ConversationManager : Manager<ConversationManager>
                 else
                 {
                     parameters.TryGetValue(parameterName, out val);
+                    Debug.Log("paraetmer " + parameterName + " get " + val);
 
-                    string replaceDes = new string(fileData.ToCharArray(), startIndex, curIndex - startIndex + 1);
-
-                    int oriLen = fileData.Length;
-                    fileData = fileData.Replace(replaceDes, "<" + val.ToString() + ">");
+                    fileData = fileData.Remove(startIndex - 1, curIndex - startIndex + 2);
+                    fileData = fileData.Insert(startIndex - 1, "<" + val + ">");
                     curIndex -= curIndex - startIndex + 1;
 
                 }
@@ -774,8 +784,27 @@ public class ConversationManager : Manager<ConversationManager>
 
                 parameterName = ReadUntilTagEnd(fileData, curIndex, out curIndex);
 
-                val = (int)GameManager.Instance.GetParameter(parameterName);
-                parameters.Add(parameterName, val);
+                while (fileData[curIndex] != '<')
+                    curIndex += 1;
+                while (fileData[curIndex] == '<')
+                {
+                    curIndex += 1;
+                    openedBracket += 1;
+                }
+
+                ParseNumber(ref fileData, ref curIndex);
+
+                valStr = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+                val = int.Parse(valStr);
+
+                if (GameManager.Instance.GetParameter(parameterName, out fVal))
+                {
+                    parameters.Add(parameterName, (int)fVal);
+                }
+                else
+                {
+                    parameters.Add(parameterName, val);
+                }
 
                 while (fileData[curIndex] == '>')
                 {
@@ -808,7 +837,7 @@ public class ConversationManager : Manager<ConversationManager>
         index = curIndex;
     }
 
-    private void ParseConversation(string fileData, int curIndex, out int outIndex, ref int openedBracket)
+    private void ParseConversation(ref string fileData, int curIndex, out int outIndex, ref int openedBracket)
     {
         int startBracket = openedBracket;
         while (fileData[curIndex] != '<')
@@ -876,7 +905,7 @@ public class ConversationManager : Manager<ConversationManager>
         // 선택지 파싱
         if (convData.hasDistracter)
         {
-            DistracterData data = ParseDistracters(fileData, curIndex, out curIndex, ref openedBracket);
+            DistracterData data = ParseDistracters(ref fileData, curIndex, out curIndex, ref openedBracket);
             convData.distracter = data;
         }
         convDatas.Add(convData);
@@ -898,6 +927,7 @@ public class ConversationManager : Manager<ConversationManager>
         ConversationFileDataStanding data = new ConversationFileDataStanding();
         data.firstCode = "Standing";
         string val;
+        Sprite sprite = null;
 
         switch (code)
         {
@@ -932,18 +962,11 @@ public class ConversationManager : Manager<ConversationManager>
 
                 data.spriteName = val;
 
-                GameObject obj = new GameObject("CG", new System.Type[] { typeof(SpriteRenderer), typeof(Animator) });
-                obj.transform.SetParent(GameManager.Instance.World.transform);
-                obj.transform.localPosition = new Vector2(data.xPos, -360);
-                obj.transform.localScale = new Vector3(1.1f, 1.1f, 1f);
+                data.order = "Set";
 
-                RuntimeAnimatorController controller = Resources.Load<RuntimeAnimatorController>("Animations/StandingCG/" + data.spriteName);
-                obj.GetComponent<Animator>().runtimeAnimatorController = controller;
+                convDatas.Add(data);
 
-                SpriteRenderer renderer = obj.GetComponent<SpriteRenderer>();
-                renderer.sortingLayerName = "Room";
-
-                standingCGs.Add(data.name, renderer);
+                
 
                 break;
             case "Change":
@@ -967,7 +990,7 @@ public class ConversationManager : Manager<ConversationManager>
 
                 data.spriteName = val;
 
-                Sprite sprite = Resources.Load<Sprite>("Sprites/Conversations/StandingCG/" + data.spriteName);
+                sprite = Resources.Load<Sprite>("Sprites/Conversations/StandingCG/" + data.spriteName);
                 preLoadedSprites.Add(data.spriteName, sprite);
 
                 data.order = "Change";
@@ -987,6 +1010,22 @@ public class ConversationManager : Manager<ConversationManager>
                 data.name = val;
 
                 data.order = "Animation";
+
+                convDatas.Add(data);
+
+                break;
+            case "Delete":
+                while (fileData[curIndex] != '<')
+                    curIndex += 1;
+                while (fileData[curIndex] == '<')
+                {
+                    curIndex += 1;
+                }
+                val = ReadUntilTagEnd(fileData, curIndex, out curIndex);
+
+                data.name = val;
+
+                data.order = "Delete";
 
                 convDatas.Add(data);
 
@@ -1063,46 +1102,48 @@ public class ConversationManager : Manager<ConversationManager>
         return str;
     }
 
-    private DistracterData ParseDistracters(string data, int startIndex, out int index, ref int openedBracket)
+    private DistracterData ParseDistracters(ref string data, int curIndex, out int index, ref int openedBracket)
     {
-        while (data[startIndex] != '<')
-            startIndex += 1;
-        while (data[startIndex] == '<')
+        while (data[curIndex] != '<')
+            curIndex += 1;
+        while (data[curIndex] == '<')
         {
             openedBracket += 1;
-            startIndex += 1;
+            curIndex += 1;
         }
 
         DistracterData disData = new DistracterData();
-        string code = ReadUntilTagEnd(data, startIndex, out startIndex);
+        string code = ReadUntilTagEnd(data, curIndex, out curIndex);
         disData.code = int.Parse(code);
 
-        while (data[startIndex] != '>')
-            startIndex += 1;
-        while (data[startIndex] == '>')
+        while (data[curIndex] != '>')
+            curIndex += 1;
+        while (data[curIndex] == '>')
         {
             openedBracket += 1;
-            startIndex -= 1;
+            curIndex -= 1;
         }
 
 
-        while (data[startIndex] != '<')
-            startIndex += 1;
-        while (data[startIndex] == '<')
+        while (data[curIndex] != '<')
+            curIndex += 1;
+        while (data[curIndex] == '<')
         {
             openedBracket += 1;
-            startIndex += 1;
+            curIndex += 1;
         }
 
-        string numStr = ReadUntilTagEnd(data, startIndex, out startIndex);
+        curIndex -= 1;
+        ParseNumber(ref data, ref curIndex);
+        string numStr = ReadUntilTagEnd(data, curIndex, out curIndex);
         int num = int.Parse(numStr);
 
-        while (data[startIndex] != '>')
-            startIndex += 1;
-        while (data[startIndex] == '>')
+        while (data[curIndex] != '>')
+            curIndex += 1;
+        while (data[curIndex] == '>')
         {
             openedBracket += 1;
-            startIndex -= 1;
+            curIndex -= 1;
         }
 
         int idx = 0;
@@ -1110,54 +1151,65 @@ public class ConversationManager : Manager<ConversationManager>
         disData.results = new string[num];
         while (idx < num)
         {
-            while (data[startIndex] != '<')
-                startIndex += 1;
-            while (data[startIndex] == '<')
+            while (data[curIndex] != '<')
+                curIndex += 1;
+            while (data[curIndex] == '<')
             {
                 openedBracket += 1;
-                startIndex += 1;
+                curIndex += 1;
             }
 
-            code = ReadUntilTagEnd(data, startIndex, out startIndex);
+            int curStsartIndex = curIndex;
+            code = ReadUntilTagEnd(data, curIndex, out curIndex);
             int startBracket = 0;
             bool chk;
 
             switch (code)
             {
                 case "If":
-                    chk = ParseCondition(ref data, ref curConvIndex, ref openedBracket, false);
+                    chk = ParseCondition(ref data, ref curIndex, ref openedBracket, false);
 
-                    code = ReadUntilTagEnd(data, startIndex, out startIndex);
-                    disData.distracters[idx] = code;
+                    code = ReadUntilTagEnd(data, curIndex, out curIndex);
+                    if(chk)
+                        disData.distracters[idx] = code;
 
                     startBracket = openedBracket;
                     do
                     {
-                        while (data[startIndex] != '<')
+                        while (data[curIndex] != '<')
                         {
-                            startIndex += 1;
+                            curIndex += 1;
                         }
 
-                        while (data[startIndex] == '<')
+                        while (data[curIndex] == '<')
                         {
                             if(chk)
                                 disData.results[idx] += "<";
                             openedBracket += 1;
-                            startIndex += 1;
+                            curIndex += 1;
                         }
 
-                        string link = ReadUntilTagEnd(data, startIndex, out startIndex, false);
+                        string link = ReadUntilTagEnd(data, curIndex, out curIndex, false);
 
-                        disData.results[idx] += link;
+                        if(chk)
+                            disData.results[idx] += link;
 
-                        while (openedBracket > startBracket && data[startIndex] == '>')
+                        while (openedBracket > startBracket && data[curIndex] == '>')
                         {
-                            disData.results[idx] += ">";
+                            if(chk)
+                                disData.results[idx] += ">";
                             openedBracket -= 1;
-                            startIndex += 1;
+                            curIndex += 1;
                         }
                     }
                     while (openedBracket > startBracket);
+
+                    if (chk)
+                        idx += 1;
+                    break;
+                case "Parameter":
+                    ParseParameters(ref data, curStsartIndex, curIndex, out curIndex, ref openedBracket);
+
                     break;
                 default:
                     disData.distracters[idx] = code;
@@ -1165,38 +1217,38 @@ public class ConversationManager : Manager<ConversationManager>
                     startBracket = openedBracket;
                     do
                     {
-                        while (data[startIndex] != '<')
+                        while (data[curIndex] != '<')
                         {
-                            startIndex += 1;
+                            curIndex += 1;
                         }
 
-                        while (data[startIndex] == '<')
+                        while (data[curIndex] == '<')
                         {
                             disData.results[idx] += "<";
                             openedBracket += 1;
-                            startIndex += 1;
+                            curIndex += 1;
                         }
 
-                        string link = ReadUntilTagEnd(data, startIndex, out startIndex, false);
+                        string link = ReadUntilTagEnd(data, curIndex, out curIndex, false);
 
                         disData.results[idx] += link;
 
-                        while (openedBracket > startBracket && data[startIndex] == '>')
+                        while (openedBracket > startBracket && data[curIndex] == '>')
                         {
                             disData.results[idx] += ">";
                             openedBracket -= 1;
-                            startIndex += 1;
+                            curIndex += 1;
                         }
                     }
                     while (openedBracket > startBracket);
+
+                    idx += 1;
                     break;
             }
-
-            idx += 1;
         }
 
 
-        index = startIndex;
+        index = curIndex;
         return disData;
     }
 
@@ -1436,19 +1488,42 @@ public class ConversationManager : Manager<ConversationManager>
 
     private void ParseStandingCgExecute(ConversationFileDataStanding data)
     {
-        SpriteRenderer obj;
+        SpriteRenderer renderer;
+        Sprite sprite;
         switch (data.order)
         {
-            case "Change":
-                if (standingCGs.TryGetValue(data.name, out obj))
+            case "Set":
+                GameObject obj = new GameObject("CG", new System.Type[] { typeof(SpriteRenderer), typeof(Animator) });
+                obj.transform.SetParent(GameManager.Instance.World.transform);
+                obj.transform.localPosition = new Vector2(data.xPos, -360);
+                obj.transform.localScale = new Vector3(1.1f, 1.1f, 1f);
+                
+                RuntimeAnimatorController controller = Resources.Load<RuntimeAnimatorController>("Animations/StandingCG/" + data.spriteName);
+                if (controller == null)
                 {
-                    Animator animator = GetComponent<Animator>();
+                    renderer = obj.GetComponent<SpriteRenderer>();
+                    sprite = Resources.Load<Sprite>("Sprites/Conversations/StandingCG/" + data.spriteName);
+                    renderer.sprite = sprite;
+                }
+                else
+                {
+                    obj.GetComponent<Animator>().runtimeAnimatorController = controller;
+                }
+
+                renderer = obj.GetComponent<SpriteRenderer>();
+                renderer.sortingLayerName = "Room";
+
+                standingCGs.Add(data.name, renderer);
+                break;
+            case "Change":
+                if (standingCGs.TryGetValue(data.name, out renderer))
+                {
+                    Animator animator = renderer.GetComponent<Animator>();
                     if (animator != null)
                         animator.enabled = false;
-
-                    Sprite sprite;
+                    
                     preLoadedSprites.TryGetValue(data.spriteName, out sprite);
-                    obj.sprite = sprite;
+                    renderer.sprite = sprite;
                 }
                 else
                 {
@@ -1456,14 +1531,26 @@ public class ConversationManager : Manager<ConversationManager>
                 }
                 break;
             case "Animation":
-                if (standingCGs.TryGetValue(data.name, out obj))
+                if (standingCGs.TryGetValue(data.name, out renderer))
                 {
-                    obj.GetComponent<Animator>().enabled = true;
+                    renderer.GetComponent<Animator>().enabled = true;
                 }
                 else
                 {
                     Debug.LogError("Could NOT FIND CG Code " + data.name);
                 }
+                break;
+            case "Delete":
+                if (standingCGs.TryGetValue(data.name, out renderer))
+                {
+                    standingCGs.Remove(data.name);
+                    Destroy(renderer.gameObject);
+                }
+                else
+                {
+                    Debug.LogError("Could NOT FIND CG Code " + data.name);
+                }
+
                 break;
         }
     }

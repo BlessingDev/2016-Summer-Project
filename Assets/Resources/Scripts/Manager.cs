@@ -29,12 +29,17 @@ public class Manager<T> : MonoBehaviour where T : Manager<T>
         }
     }
 
+    protected bool destroyReserved = false;
+
     virtual public void Init()
     {
         if (FindObjectsOfType<T>().Length > 1)
         {
             if(this != instance)
+            {
                 Destroy(this);
+                destroyReserved = true;
+            }
             return;
         }
 
@@ -47,7 +52,10 @@ public class Manager<T> : MonoBehaviour where T : Manager<T>
         if (FindObjectsOfType<T>().Length > 1)
         {
             if (this != instance)
+            {
                 Destroy(this);
+                destroyReserved = true;
+            }
             return;
         }
 

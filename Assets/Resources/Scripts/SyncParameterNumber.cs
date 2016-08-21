@@ -22,17 +22,17 @@ public class SyncParameterNumber : MonoBehaviour
             return;
         }
 
-        GameManager.Instance.GetParameter(parameterName);
-
         Update();
 	}
 	
 	// Update is called once per frame
 	void Update ()
     {
+        float val;
+        GameManager.Instance.GetParameter(parameterName, out val);
         if (text != null)
-            text.text = GameManager.Instance.GetParameter(parameterName).ToString();
+            text.text = val.ToString();
         else if (cusText != null)
-            cusText.Text = GameManager.Instance.GetParameter(parameterName).ToString();
+            cusText.Text = val.ToString();
     }
 }

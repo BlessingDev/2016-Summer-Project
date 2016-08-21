@@ -415,8 +415,9 @@ public class GameManager : Manager<GameManager>
         set
         {
             testCount += 1;
-            SetParameter("TotalTestScore",
-                GetParameter("TotalTestScore") + value);
+            float val;
+            GetParameter("TotalTestScore", out val);
+            SetParameter("TotalTestScore", val + value);
 
             latestScore = value;
         }
@@ -442,7 +443,19 @@ public class GameManager : Manager<GameManager>
         }
     }
 
-    public int course = -1;
+    private int course = -1;
+    public int Course
+    {
+        get
+        {
+            return course;
+        }
+        set
+        {
+            SetParameter("Course", value);
+            course = value;
+        }
+    }
     private List<ScheduleType> selectedSubjects;
 
     public Date latestCompetitionDate;
@@ -455,6 +468,8 @@ public class GameManager : Manager<GameManager>
             return latestCompetitionResult;
         }
     }
+
+    public bool isVacation;
 
     public override void Init()
     {
@@ -470,6 +485,7 @@ public class GameManager : Manager<GameManager>
         base.Init();
 
         stress = 0;
+        isVacation = false;
         selectedSubjects = new List<ScheduleType>();
         schedulesDic = new Dictionary<ScheduleType, int>();
 
@@ -487,7 +503,7 @@ public class GameManager : Manager<GameManager>
         parameters = new Dictionary<string, float>();
 
         parameters.Add("Stress", 0);
-        parameters.Add("Math", 0);
+        parameters.Add("Math", 15000);
         parameters.Add("English", 0);
         parameters.Add("Korean", 0);
         parameters.Add("Science", 0);
@@ -498,8 +514,17 @@ public class GameManager : Manager<GameManager>
 
         parameters.Add("InterviewScore", 0);
         parameters.Add("TotalTestScore", 0);
-        parameters.Add("Course", 0);
+        parameters.Add("Course", 1);
         parameters.Add("Major", 0);
+
+        parameters.Add("SchoolNewspaperPolicy", 0);
+        parameters.Add("CafeteriaPolicy", 0);
+        parameters.Add("LibraryPolicy", 0);
+        parameters.Add("CompetitionPolicy", 0);
+        parameters.Add("SchoolNewspaperCheck", 1);
+        parameters.Add("CafeteriaCheck", 1);
+        parameters.Add("LibraryCheck", 1);
+        parameters.Add("CompetitionCheck", 0);
 
         parameterLimit = new Dictionary<string, int>();
 
@@ -563,7 +588,9 @@ public class GameManager : Manager<GameManager>
             MovementManager.Instance.update();
 
             if(curLevel == SceneManager.Instance.GetLevel("GameScene"))
+            {
                 playerPos = Player.transform.localPosition;
+            }
         }
     }
 
@@ -619,7 +646,7 @@ public class GameManager : Manager<GameManager>
 
         GameObject obj = Instantiate(preScheduleButton);
         obj.transform.SetParent(UIManager.Instance.Canvas.transform);
-        obj.transform.localPosition = new Vector2(165, -303);
+        obj.GetComponent<RectTransform>().anchoredPosition = new Vector2(6, 57);
         obj.transform.localScale = Vector3.one;
         scheduleButton = obj.GetComponent<Button>();
 
@@ -661,17 +688,19 @@ public class GameManager : Manager<GameManager>
         }
     }
     
-    public float GetParameter(string name)
+    public bool GetParameter(string name, out float outVal)
     {
         float val = 0;
         if(parameters.TryGetValue(name, out val))
         {
-            return val;
+            outVal = val;
+            return true;
         }
         else
         {
-            Debug.LogError("parameters DOESN'T HAVE " + name);
-            return -1;
+            Debug.LogWarning("parameters DOESN'T HAVE " + name);
+            outVal = -1;
+            return false;
         }
     }
 
@@ -707,8 +736,16 @@ public class GameManager : Manager<GameManager>
 
     public void ScheduleExecute()
     {
-        executeSchedule = true;
-        SceneManager.Instance.ChangeScene("GameScene");
+        if(!SchedulingManager.Instance.CheckScheduleNull())
+        {
+            executeSchedule = true;
+            SoundManager.Instance.SetEffect("DE03033(초침 소리)");
+            SceneManager.Instance.ChangeScene("GameScene");
+        }
+        else
+        {
+            Debug.LogWarning("Schedule is NULL");
+        }
     }
 
     public void PauseGame()
@@ -989,11 +1026,13 @@ public class GameManager : Manager<GameManager>
     public void GradeCompetition(string parameter)
     {
         int average = GetAverageParameter();
-        if(average <= GetParameter(parameter))
+        float val;
+        GetParameter(parameter, out val);
+        if (average <= val)
         {
             latestCompetitionResult = 2;
         }
-        else if(average * 0.66f <= GetParameter(parameter))
+        else if(average * 0.66f <= val)
         {
             latestCompetitionResult = 1;
         }
@@ -1005,6 +1044,7 @@ public class GameManager : Manager<GameManager>
 
     public void SetVacationSteaker()
     {
+        isVacation = true;
         Dictionary<ScheduleType, int> sche = new Dictionary<ScheduleType, int>();
         foreach(var iter in schedulesDic)
         {
@@ -1037,6 +1077,7 @@ public class GameManager : Manager<GameManager>
 
     public void SetOpeningSteaker()
     {
+        isVacation = false;
         Dictionary<ScheduleType, int> sche = new Dictionary<ScheduleType, int>();
         foreach (var iter in schedulesDic)
         {
@@ -1067,23 +1108,34 @@ public class GameManager : Manager<GameManager>
         schedulesDic = sche;
     }
 
-    public float GetParameterBonus(string parameterName)
+    public float GetParameterBonus(string parameterName, bool study)
     {
         float bonus = 1f;
         switch(parameterName)
         {
             case "Stress":
-                switch(curSkinNames[(int)SkinType.Bed])
+
+                if(study)
                 {
-                    case "더나은침대":
+                    if (SchedulingManager.Instance.StudyMode == 1)
+                        bonus -= 0.1f;
+                    else if (SchedulingManager.Instance.StudyMode == 3)
                         bonus += 0.1f;
-                        break;
-                    case "Map_Bed_3":
-                        bonus += 0.25f;
-                        break;
-                    case "Map_Bed_4":
-                        bonus += 0.4f;
-                        break;
+                }
+                else
+                {
+                    switch (curSkinNames[(int)SkinType.Bed - 1])
+                    {
+                        case "더나은침대":
+                            bonus += 0.1f;
+                            break;
+                        case "Map_Bed_3":
+                            bonus += 0.25f;
+                            break;
+                        case "Map_Bed_4":
+                            bonus += 0.4f;
+                            break;
+                    }
                 }
                 break;
             case "Math":
@@ -1096,7 +1148,7 @@ public class GameManager : Manager<GameManager>
                 else if (SchedulingManager.Instance.StudyMode == 3)
                     bonus += 0.1f;
 
-                switch(curSkinNames[(int)SkinType.Desk])
+                switch(curSkinNames[(int)SkinType.Desk - 1])
                 {
                     case "Map_Desk_3":
                         bonus += 0.05f;

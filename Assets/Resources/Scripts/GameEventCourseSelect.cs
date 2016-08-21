@@ -35,7 +35,7 @@ public class GameEventCourseSelect : GameEvent
 
     public override void EventEnded()
     {
-        GameManager.Instance.course = ConversationManager.Instance.GetParameter("Course");
+        GameManager.Instance.Course = ConversationManager.Instance.GetParameter("Course");
         GameManager.Instance.SetSelectedSubject(ScheduleType.KoreanHistory);
 
         if (ConversationManager.Instance.GetParameter("Economy") == 1)

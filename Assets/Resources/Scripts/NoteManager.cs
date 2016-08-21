@@ -113,7 +113,9 @@ public class NoteManager :  Manager<NoteManager>
 
         foreach(var iter in noteDatas)
         {
-            if(GameManager.Instance.GetParameter(iter.subjectName) >= iter.limitLine)
+            float val;
+            GameManager.Instance.GetParameter(iter.subjectName, out val);
+            if (val >= iter.limitLine)
             {
                 possibleNoteDatas.Add(iter);
             }

@@ -401,6 +401,7 @@ public class SchedulingManager : Manager<SchedulingManager>
             curTime += 1;
             SetCutSceneAnimation();
             SetParameterBar();
+            SoundManager.Instance.PlayEffect("DE03033(초침 소리)");
         }
     }
 
@@ -676,9 +677,11 @@ public class SchedulingManager : Manager<SchedulingManager>
     {
         if(scheduleList[curTime - 1].IsRatable)
         {
-            float percentage = 100 - GameManager.Instance.GetParameter("Stress");
+            float val;
+            GameManager.Instance.GetParameter("Stress", out val);
+            float percentage = 110 - val;
 
-            float val = Random.value * 100;
+            val = Random.value * 100;
 
             if (val <= percentage)
             {
@@ -753,8 +756,43 @@ public class SchedulingManager : Manager<SchedulingManager>
 
     public void AddParameterAndShowText(string parameterName, float addVal)
     {
+        bool study = false;
+        switch(scheduleList[curTime].Type)
+        {
+            case ScheduleType.BasicMath:
+            case ScheduleType.Chemistry:
+            case ScheduleType.Classic:
+            case ScheduleType.DifferencialAndIntegral:
+            case ScheduleType.EarthScience:
+            case ScheduleType.Economy:
+            case ScheduleType.English:
+            case ScheduleType.EnglishReadingAndWriting:
+            case ScheduleType.Ethics:
+            case ScheduleType.Geography:
+            case ScheduleType.Korean:
+            case ScheduleType.KoreanHistory:
+            case ScheduleType.LawAndPolitics:
+            case ScheduleType.LifeScience:
+            case ScheduleType.MathCompetition:
+            case ScheduleType.Physics:
+            case ScheduleType.ProbabilityAndStatistics:
+            case ScheduleType.ReadingAndGrammar:
+            case ScheduleType.Science:
+            case ScheduleType.SocialStudy:
+            case ScheduleType.SocietyAndCulture:
+            case ScheduleType.WorldHistory:
+                study = true;
+                break;
+        }
+
+        float bonus = GameManager.Instance.GetParameterBonus(parameterName, study);
+        addVal *= bonus;
+
+        float val;
+        GameManager.Instance.GetParameter(parameterName, out val);
+
         GameManager.Instance.SetParameter(parameterName,
-            GameManager.Instance.GetParameter(parameterName) + addVal);
+           val  + addVal);
 
         ParameterCategory cat;
         if(parameterConversion.TryGetValue(parameterName, out cat))
@@ -852,5 +890,15 @@ public class SchedulingManager : Manager<SchedulingManager>
         time += val;
         befTime += val;
         curTime += val;
+    }
+
+    public bool CheckScheduleNull()
+    {
+        for(int i = 0; i < 24; i += 1)
+        {
+            if (scheduleList[i] == null)
+                return true;
+        }
+        return false;
     }
 }

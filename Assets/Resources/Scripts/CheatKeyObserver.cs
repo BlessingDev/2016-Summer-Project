@@ -27,6 +27,10 @@ public class CheatKeyObserver : MonoBehaviour
         {
             EndDate();
         }
+        if(Input.GetKeyDown(KeyCode.M))
+        {
+            GameManager.Instance.Money += 40;
+        }
 
         if(Input.GetKeyDown(KeyCode.C))
         {
@@ -43,7 +47,7 @@ public class CheatKeyObserver : MonoBehaviour
 
         if(Input.GetKey(KeyCode.T))
         {
-            ConversationManager.Instance.StartConversationEvent("DarkUnion");
+            ConversationManager.Instance.StartConversationEvent("University Select");
         }
 	}
 

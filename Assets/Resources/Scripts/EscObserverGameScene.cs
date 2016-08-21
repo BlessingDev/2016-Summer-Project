@@ -7,6 +7,6 @@ public class EscObserverGameScene : EscObserver
 
     public override void EscAction()
     {
-        Application.Quit();
+        SceneManager.Instance.ChangeScene("MainScene");
     }
 }
