@@ -55,7 +55,11 @@ public class CheatKeyObserver : MonoBehaviour
             ConversationManager.Instance.StartConversationEvent("Sleep Too Less");
             EventManager.Instance.SetCurEvent("Sleep Too Less");
         }
-
+        if(Input.GetKeyDown(KeyCode.P))
+        {
+            ConversationManager.Instance.StartConversationEvent("Go Out PC");
+            EventManager.Instance.SetCurEvent("Go Out PC");
+        }
 
         if(Input.GetKeyDown(KeyCode.T))
         {
@@ -63,6 +67,7 @@ public class CheatKeyObserver : MonoBehaviour
 
         if(Input.GetKey(KeyCode.Alpha1))
         {
+            // 선거 후보 등록
             GameManager.Instance.GameDate = new Date(2, 6, 8);
         }
         if(Input.GetKey(KeyCode.Alpha2))
@@ -96,7 +101,7 @@ public class CheatKeyObserver : MonoBehaviour
         }
         if (Input.GetKey(KeyCode.Alpha8))
         {
-            ConversationManager.Instance.StartConversationEvent("Political View Presentation");
+            //ConversationManager.Instance.StartConversationEvent("Political View Presentation");
         }
         if (Input.GetKey(KeyCode.Alpha9))
         {

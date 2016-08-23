@@ -42,7 +42,7 @@ public class GameEventGoOutPCRoom : GameEvent {
             SchedulingManager.Instance.SetSchedule(19, ScheduleType.PCRoom);
 
             SchedulingManager.Instance.clearSchedule = true;
-            GameManager.Instance.isLockSchedule = true;
+            GameManager.isLockSchedule = true;
         }
 
         SchedulingManager.Instance.initTime = false;

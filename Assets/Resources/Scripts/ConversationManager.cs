@@ -1010,8 +1010,11 @@ public class ConversationManager : Manager<ConversationManager>
 
                 data.spriteName = val;
 
-                sprite = Resources.Load<Sprite>("Sprites/Conversations/StandingCG/" + data.spriteName);
-                preLoadedSprites.Add(data.spriteName, sprite);
+                if(!preLoadedSprites.ContainsKey(data.spriteName))
+                {
+                    sprite = Resources.Load<Sprite>("Sprites/Conversations/StandingCG/" + data.spriteName);
+                    preLoadedSprites.Add(data.spriteName, sprite);
+                }
 
                 data.order = "Change";
 
@@ -1565,7 +1568,9 @@ public class ConversationManager : Manager<ConversationManager>
             case "Animation":
                 if (standingCGs.TryGetValue(data.name, out renderer))
                 {
-                    renderer.GetComponent<Animator>().enabled = true;
+                    Animator animator = renderer.GetComponent<Animator>();
+                    animator.enabled = true;
+                    animator.Play("BasicStandingCGBase");
                 }
                 else
                 {

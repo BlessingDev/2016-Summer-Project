@@ -1,14 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System;
 
-public class GameEventPoliticalViewPresentation : GameEvent {
+public class GameEventElection : GameEvent {
 
     static bool executed = false;
 
     public override void Init()
     {
-        eventName = "Political View Presentation";
+        eventName = "Election";
     }
 
     public override bool ConditionCheck()
@@ -18,7 +17,7 @@ public class GameEventPoliticalViewPresentation : GameEvent {
         if (!executed &&
             gameDate.Year == 2 &&
             gameDate.Month == 6 &&
-            gameDate.Day == 20 &&
+            gameDate.Day == 21 &&
             SchedulingManager.Instance.GameTime >= 17f)
         {
             return true;
@@ -32,7 +31,7 @@ public class GameEventPoliticalViewPresentation : GameEvent {
     public override void ExecuteEvent()
     {
         executed = true;
-        ConversationManager.Instance.StartConversationEvent("Political View Presentation");
+        ConversationManager.Instance.StartConversationEvent("Election");
     }
 
     public override void EventEnded()

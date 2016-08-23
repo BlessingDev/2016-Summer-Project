@@ -471,7 +471,7 @@ public class GameManager : Manager<GameManager>
 
     public bool isVacation;
 
-    public bool isLockSchedule;
+    static public bool isLockSchedule;
 
     public override void Init()
     {
@@ -506,13 +506,13 @@ public class GameManager : Manager<GameManager>
 
         parameters.Add("Stress", 0);
         parameters.Add("Math", 15000);
-        parameters.Add("English", 0);
-        parameters.Add("Korean", 0);
-        parameters.Add("Science", 0);
-        parameters.Add("Social", 0);
-        parameters.Add("Art", 0);
-        parameters.Add("Music", 0);
-        parameters.Add("Volunteer", 0);
+        parameters.Add("English", 15000);
+        parameters.Add("Korean", 15000);
+        parameters.Add("Science", 15000);
+        parameters.Add("Social", 15000);
+        parameters.Add("Art", 15000);
+        parameters.Add("Music", 15000);
+        parameters.Add("Volunteer", 100);
 
         parameters.Add("InterviewScore", 0);
         parameters.Add("TotalTestScore", 0);
