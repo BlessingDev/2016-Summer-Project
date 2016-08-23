@@ -17,8 +17,8 @@ public class GameEventCandidateRegister : GameEvent {
 
         if (!executed &&
             gameDate.Year == 2 &&
-            gameDate.Month == 5 &&
-            gameDate.Day == 4)
+            gameDate.Month == 6 &&
+            gameDate.Day == 8)
         {
             return true;
         }
@@ -37,6 +37,24 @@ public class GameEventCandidateRegister : GameEvent {
 
     public override void EventEnded()
     {
-        //나중에 채워야 할 부분
+        if(ConversationManager.Instance.GetParameter("SchoolNewspaperCheck") == 1)
+        {
+            GameManager.Instance.SetParameter("SchoolNewspaperCheck", 1);
+        }
+        if (ConversationManager.Instance.GetParameter("CafeteriaCheck") == 1)
+        {
+            GameManager.Instance.SetParameter("CafeteriaCheck", 1);
+        }
+        if (ConversationManager.Instance.GetParameter("CompetitionCheck") == 1)
+        {
+            GameManager.Instance.SetParameter("CompetitionCheck", 1);
+        }
+        if (ConversationManager.Instance.GetParameter("LibraryCheck") == 1)
+        {
+            GameManager.Instance.SetParameter("LibraryCheck", 1);
+        }
+
+        SchedulingManager.Instance.initTime = false;
+        GameManager.Instance.ScheduleExecute();
     }
 }

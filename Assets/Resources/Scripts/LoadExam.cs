@@ -240,7 +240,8 @@ public class LoadExam : Manager<LoadExam>
         
         foreach(var iter in problemDatas)
         {
-            List<ProblemData> list = iter.Value;
+            var arr = iter.Value.ToArray();
+            List<ProblemData> list = new List<ProblemData>(arr);
             for(int i = 0; i < PROBLEMS_PER_SUBJECT; i += 1)
             {
                 int selectedIdx = Random.Range(0, list.Count);
@@ -340,7 +341,7 @@ public class LoadExam : Manager<LoadExam>
         GameManager.Instance.LatestScore += (int)(correctNum * scorePerProblem);
         latestTestDate = GameManager.Instance.GameDate;
 
-        GameManager.Instance.scheduleButtonType = ScheduleButtonType.Schedule;
+        GameManager.scheduleButtonType = ScheduleButtonType.Schedule;
         SceneManager.Instance.ChangeScene("GameScene");
     }
 }

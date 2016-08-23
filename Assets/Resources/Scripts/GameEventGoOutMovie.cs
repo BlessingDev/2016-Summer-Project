@@ -45,6 +45,7 @@ public class GameEventGoOutMovie : GameEvent
             SchedulingManager.Instance.SetReserveDate(date);
         }
 
+        SchedulingManager.Instance.initTime = false;
         GameManager.Instance.ScheduleExecute();
     }
 }

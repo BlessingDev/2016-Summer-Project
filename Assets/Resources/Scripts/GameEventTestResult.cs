@@ -4,6 +4,8 @@ using System;
 
 public class GameEventTestResult : GameEvent
 {
+    public static bool executable = true;
+
     public override void Init()
     {
         eventName = "TestResult";
@@ -18,7 +20,8 @@ public class GameEventTestResult : GameEvent
         if(date.Year == testDate.Year && 
             date.Month == testDate.Month &&
             date.Day == testDate.Day + 3 &&
-            SchedulingManager.Instance.GameTime >= 17)
+            SchedulingManager.Instance.GameTime >= 17 &&
+            executable)
         {
             return true;
         }
@@ -30,6 +33,8 @@ public class GameEventTestResult : GameEvent
 
     public override void ExecuteEvent()
     {
+        executable = false;
+
         ConversationManager.Instance.StartConversationEvent("Test Result");
     }
 

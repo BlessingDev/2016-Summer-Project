@@ -9,17 +9,43 @@ public class SoundManager : Manager<SoundManager>
     private Dictionary<string, AudioSource> backgroundMusics;
     private Dictionary<string, AudioSource> effects;
 
-    static private int curLevel;
+    private List<AudioSource> effectPool;
 
-	// Use this for initialization
-	void Start ()
+    private bool soundOff = false;
+    public bool IsSoundOff
     {
-        if(!inited)
+        get
+        {
+            return soundOff;
+        }
+        set
+        {
+            soundOff = value;
+
+            if (value)
+            {
+                StopAllBackground();
+                StopAllEffects();
+            }
+            else
+            {
+                PlayBackgroundMusicByLevel(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+            }
+        }
+    }
+
+    static private int curLevel = -1;
+
+    // Use this for initialization
+    void Start()
+    {
+        if (!inited)
         {
             Init();
             preloadedAudio = new Dictionary<string, AudioClip>();
             effects = new Dictionary<string, AudioSource>();
             backgroundMusics = new Dictionary<string, AudioSource>();
+            effectPool = new List<AudioSource>();
 
             var audios = Resources.LoadAll<AudioClip>("Sounds/Effects/");
             for (int i = 0; i < audios.Length; i += 1)
@@ -32,59 +58,93 @@ public class SoundManager : Manager<SoundManager>
             {
                 preloadedAudio.Add(audios[i].name, audios[i]);
             }
+
+            var ins = Instance;
         }
     }
-	
+
+    void Update()
+    {
+        var arr = effectPool.ToArray();
+        for (int i = 0; i < arr.Length; i += 1)
+        {
+            if(!arr[i].isPlaying)
+            {
+                effectPool.Remove(arr[i]);
+                Destroy(arr[i].gameObject);
+            }
+        }
+    }
+
     public override void OnLevelWasLoaded(int level)
     {
         base.OnLevelWasLoaded(level);
 
-        if (!inited)
-            Start();
+        if (!destroyReserved)
+        {
+            if (!inited)
+                Start();
 
-        PlayBackgroundMusicByLevel(level);
+            ClearEffects();
+
+            if (curLevel != UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex)
+            {
+                curLevel = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
+                PlayBackgroundMusicByLevel(level);
+            }
+        }
     }
 
     private void PlayBackgroundMusicByLevel(int level)
     {
-        if(level == SceneManager.Instance.GetLevel("MainScene"))
+        if (level == SceneManager.Instance.GetLevel("MainScene"))
         {
             StopAllBackground();
             PlayBackground("Light_Rain");
             PlayBackground("Prelude_No_19");
         }
-        else if(level == SceneManager.Instance.GetLevel("GameScene"))
+        else if (level == SceneManager.Instance.GetLevel("GameScene"))
         {
             StopAllBackground();
             PlayBackground("Tuba_Waddle");
+        }
+        else if (level == SceneManager.Instance.GetLevel("ConversationScene"))
+        {
+            StopAllBackground();
+            PlayBackground("End_of_Summer");
         }
     }
 
     public bool PlayBackground(string fileName)
     {
-        if(backgroundMusics.ContainsKey(fileName))
+        if(!soundOff)
         {
-            Debug.LogWarning("Already Playing Background " + fileName);
-            StopBackground(fileName);
+            if (backgroundMusics.ContainsKey(fileName))
+            {
+                Debug.LogWarning("Already Playing Background " + fileName);
+                StopBackground(fileName);
+            }
+            if (!preloadedAudio.ContainsKey(fileName))
+            {
+                Debug.LogError("NOT Loaded Music File " + fileName);
+                return false;
+            }
+
+            AudioClip clip;
+            preloadedAudio.TryGetValue(fileName, out clip);
+
+            GameObject obj = new GameObject(fileName, new System.Type[] { typeof(AudioSource) });
+            DontDestroyOnLoad(obj);
+            AudioSource source = obj.GetComponent<AudioSource>();
+            backgroundMusics.Add(fileName, source);
+
+            source.clip = clip;
+            source.loop = true;
+            source.Play();
+            return true;
         }
-        if(!preloadedAudio.ContainsKey(fileName))
-        {
-            Debug.LogError("NOT Loaded Music File " + fileName);
-            return false;
-        }
 
-        AudioClip clip;
-        preloadedAudio.TryGetValue(fileName, out clip);
-
-        GameObject obj = new GameObject(fileName, new System.Type[] { typeof(AudioSource) });
-        DontDestroyOnLoad(obj);
-        AudioSource source = obj.GetComponent<AudioSource>();
-        backgroundMusics.Add(fileName, source);
-
-        source.clip = clip;
-        source.loop = true;
-        source.Play();
-        return true;
+        return false;
     }
 
     public bool StopBackground(string fileName)
@@ -104,25 +164,62 @@ public class SoundManager : Manager<SoundManager>
 
     public void StopAllBackground()
     {
-        foreach(var iter in backgroundMusics)
+        if (backgroundMusics != null)
         {
-            Destroy(iter.Value.gameObject);
-        }
+            foreach (var iter in backgroundMusics)
+            {
+                Destroy(iter.Value.gameObject);
+            }
 
-        backgroundMusics.Clear();
+            backgroundMusics.Clear();
+        }
     }
 
-    public bool SetEffect(string fileName)
+    public bool PlayEffectForce(string fileName)
     {
-        if (effects.ContainsKey(fileName))
+        if(!soundOff)
         {
-            Debug.LogWarning("Already Playing Background " + fileName);
-            return false;
+            AudioSource source;
+            effects.TryGetValue(fileName, out source);
+            PlayPoolSound(fileName);
+
+            return true;
         }
+        return false;
+    }
+
+    public void PlayEffect(string musicName)
+    {
+        if(!soundOff)
+        {
+            AudioSource source;
+
+            if (!effects.ContainsKey(musicName))
+            {
+                AudioClip clip;
+                preloadedAudio.TryGetValue(musicName, out clip);
+
+                GameObject obj = new GameObject(musicName, new System.Type[] { typeof(AudioSource) });
+                source = obj.GetComponent<AudioSource>();
+
+                source.clip = clip;
+
+                effects.Add(musicName, source);
+            }
+
+            effects.TryGetValue(musicName, out source);
+
+            if (!source.isPlaying)
+                source.Play();
+        }
+    }
+
+    private void PlayPoolSound(string fileName)
+    {
         if (!preloadedAudio.ContainsKey(fileName))
         {
             Debug.LogError("NOT Loaded Music File " + fileName);
-            return false;
+            return;
         }
 
         AudioClip clip;
@@ -130,25 +227,56 @@ public class SoundManager : Manager<SoundManager>
 
         GameObject obj = new GameObject(fileName, new System.Type[] { typeof(AudioSource) });
         AudioSource source = obj.GetComponent<AudioSource>();
-        effects.Add(fileName, source);
 
         source.clip = clip;
-        return true;
+
+        source.Play();
+        effectPool.Add(source);
     }
 
-    public bool PlayEffect(string fileName)
+    public void StopAllEffects()
     {
-        if (!effects.ContainsKey(fileName))
+        foreach(var iter in effectPool)
         {
-            Debug.LogWarning("NOT Found Setted Effect " + fileName);
-            return false;
+            Destroy(iter.gameObject);
         }
 
-        AudioSource source;
-        effects.TryGetValue(fileName, out source);
-        if(!source.isPlaying)
-            source.Play();
+        effectPool.Clear();
 
-        return true;
+        foreach(var iter in effects)
+        {
+            Destroy(iter.Value.gameObject);
+        }
+
+        effects.Clear();
+    }
+
+    public void ClearEffects()
+    {
+        effectPool.Clear();
+        effects.Clear();
+    }
+
+    public void StopEffects(string musicName)
+    {
+        var arr = effectPool.ToArray();
+
+        for(int i = 0; i < arr.Length; i += 1)
+        {
+            if(arr[i].name == musicName)
+            {
+                effectPool.Remove(arr[i]);
+                Destroy(arr[i]);
+            }
+        }
+
+        if(effects.ContainsKey(musicName))
+        {
+            AudioSource source;
+            effects.TryGetValue(musicName, out source);
+            Destroy(source.gameObject);
+
+            effects.Remove(musicName);
+        }
     }
 }

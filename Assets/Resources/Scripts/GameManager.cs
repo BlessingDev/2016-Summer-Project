@@ -403,7 +403,7 @@ public class GameManager : Manager<GameManager>
     private GameObject preScheduleButton;
     private Button scheduleButton;
 
-    public ScheduleButtonType scheduleButtonType = ScheduleButtonType.Schedule;
+    static public ScheduleButtonType scheduleButtonType = ScheduleButtonType.Schedule;
 
     private int latestScore;
     public int LatestScore
@@ -471,6 +471,8 @@ public class GameManager : Manager<GameManager>
 
     public bool isVacation;
 
+    public bool isLockSchedule;
+
     public override void Init()
     {
         if (!inited)
@@ -489,7 +491,7 @@ public class GameManager : Manager<GameManager>
         selectedSubjects = new List<ScheduleType>();
         schedulesDic = new Dictionary<ScheduleType, int>();
 
-        schedulesDic.Add(ScheduleType.TakeARest, 6);
+        schedulesDic.Add(ScheduleType.TakeARest, 10);
         schedulesDic.Add(ScheduleType.BasicMath, 4);
         schedulesDic.Add(ScheduleType.English, 4);
         schedulesDic.Add(ScheduleType.Korean, 4);
@@ -517,14 +519,16 @@ public class GameManager : Manager<GameManager>
         parameters.Add("Course", 1);
         parameters.Add("Major", 0);
 
-        parameters.Add("SchoolNewspaperPolicy", 0);
-        parameters.Add("CafeteriaPolicy", 0);
-        parameters.Add("LibraryPolicy", 0);
-        parameters.Add("CompetitionPolicy", 0);
-        parameters.Add("SchoolNewspaperCheck", 1);
-        parameters.Add("CafeteriaCheck", 1);
-        parameters.Add("LibraryCheck", 1);
+        parameters.Add("SchoolNewspaperPolicy", 1);
+        parameters.Add("CafeteriaPolicy", 1);
+        parameters.Add("LibraryPolicy", 1);
+        parameters.Add("CompetitionPolicy", 1);
+        parameters.Add("SchoolNewspaperCheck", 0);
+        parameters.Add("CafeteriaCheck", 0);
+        parameters.Add("LibraryCheck", 0);
         parameters.Add("CompetitionCheck", 0);
+
+        parameters.Add("UniversityPass", 0);
 
         parameterLimit = new Dictionary<string, int>();
 
@@ -616,6 +620,8 @@ public class GameManager : Manager<GameManager>
 
     public void InitGameScene()
     {
+        TutorialManager.Instance.TryTutorial("11");
+
         player = Instantiate(prePlayer);
         player.transform.SetParent(world.transform);
         player.transform.localPosition = Vector3.zero;
@@ -625,12 +631,18 @@ public class GameManager : Manager<GameManager>
         if (executeSchedule)
         {
             executeSchedule = false;
-
             SchedulingManager.Instance.OpenSchedulePopup();
             EventManager.Instance.InitEvents();
 
             SchedulingManager.Instance.Progressing = true;
             UIManager.Instance.SetEnableTouchLayer("Main", false);
+            if(isLockSchedule)
+            {
+                isLockSchedule = false;
+                SchedulingManager.Instance.StopScheduleAndLock();
+            }
+
+            TutorialManager.Instance.TryTutorial("44");
         }
 
         InitScheduleButton();
@@ -739,7 +751,6 @@ public class GameManager : Manager<GameManager>
         if(!SchedulingManager.Instance.CheckScheduleNull())
         {
             executeSchedule = true;
-            SoundManager.Instance.SetEffect("DE03033(초침 소리)");
             SceneManager.Instance.ChangeScene("GameScene");
         }
         else
@@ -1094,7 +1105,7 @@ public class GameManager : Manager<GameManager>
 
                     break;
                 case ScheduleType.TakeARest:
-                    sche.Add(iter.Key, 6);
+                    sche.Add(iter.Key, 10);
 
                     break;
                 case ScheduleType.Volunteer:
@@ -1136,6 +1147,16 @@ public class GameManager : Manager<GameManager>
                             bonus += 0.4f;
                             break;
                     }
+
+                    switch(curSkinNames[(int)SkinType.Floor - 1])
+                    {
+                        case "school_floor":
+                            bonus += 0.25f;
+                            break;
+                        case "space_floor":
+                            bonus += 0.3f;
+                            break;
+                    }
                 }
                 break;
             case "Math":
@@ -1157,6 +1178,15 @@ public class GameManager : Manager<GameManager>
                     case "더나은테이블":
                         bonus += 0.15f;
 
+                        break;
+                }
+                switch(curSkinNames[(int)SkinType.Wall - 1])
+                {
+                    case "school_wallpaper":
+                        bonus += 0.25f;
+                        break;
+                    case "space_wallpaer":
+                        bonus += 0.3f;
                         break;
                 }
                 break;

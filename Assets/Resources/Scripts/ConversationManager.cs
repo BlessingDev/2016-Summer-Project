@@ -44,6 +44,11 @@ public class ConversationFileDataStanding : ConversationFileDataBase
     public string spriteName;
 }
 
+public class ConversationFileDataBGM : ConversationFileDataBase
+{
+    public string musicName;
+}
+
 public struct DistracterData
 {
     public int code;
@@ -93,6 +98,7 @@ public class ConversationManager : Manager<ConversationManager>
 
     private Dictionary<string, SpriteRenderer> standingCGs;
     private string eventName;
+    private GameObject clickTrigger;
 
     // Use this for initialization
     void Start()
@@ -115,6 +121,7 @@ public class ConversationManager : Manager<ConversationManager>
         talkerName.Add(5, "친구1");
         talkerName.Add(6, "방송");
         talkerName.Add(7, "후보1");
+        talkerName.Add(8, "후보2");
 
         compatitableVersion.Add("2.0");
         compatitableVersion.Add("2.1");
@@ -151,6 +158,7 @@ public class ConversationManager : Manager<ConversationManager>
             talkerBack = obj.GetComponent<Image>();
 
             background = GameObject.Find("Background").GetComponent<SpriteRenderer>();
+            clickTrigger = FindObjectOfType<ConversationClickObserver>().gameObject;
 
             ParseConvFile(eventName + "_Basic");
             ShowText();
@@ -315,6 +323,20 @@ public class ConversationManager : Manager<ConversationManager>
                 ParseStandingCG(fileData, ref curIndex);
 
                 curIndex += 1;
+                break;
+            case "Bgm":
+                ConversationFileDataBGM bgmData = new ConversationFileDataBGM();
+                bgmData.firstCode = "Bgm";
+
+                while (fileData[curIndex] != '<')
+                    curIndex += 1;
+
+                string musicName = ReadUntilTagEnd(fileData, curIndex + 1, out curIndex);
+
+                bgmData.musicName = musicName;
+
+                convDatas.Add(bgmData);
+
                 break;
             default:
                 Debug.LogWarning("CAN'T PARSE TAG " + code);
@@ -784,12 +806,10 @@ public class ConversationManager : Manager<ConversationManager>
 
                 parameterName = ReadUntilTagEnd(fileData, curIndex, out curIndex);
 
-                while (fileData[curIndex] != '<')
-                    curIndex += 1;
-                while (fileData[curIndex] == '<')
+                while (fileData[curIndex] == '>')
                 {
                     curIndex += 1;
-                    openedBracket += 1;
+                    openedBracket -= 1;
                 }
 
                 ParseNumber(ref fileData, ref curIndex);
@@ -1097,7 +1117,7 @@ public class ConversationManager : Manager<ConversationManager>
             str = str.Replace("§", "");
         }
 
-        //Debug.Log(str + " is readed");
+        Debug.Log(str + " is readed");
         index = startIndex;
         return str;
     }
@@ -1322,6 +1342,12 @@ public class ConversationManager : Manager<ConversationManager>
                         case "End":
                             EventManager.Instance.EventEnded();
                             return;
+                        case "Bgm":
+                            ConversationFileDataBGM bgmData = (ConversationFileDataBGM)convDatas[curConvIndex];
+
+                            SoundManager.Instance.PlayBackground(bgmData.musicName);
+
+                            break;
                         default:
                             Debug.LogError("CAN'T Parse Tag " + code);
 
@@ -1472,13 +1498,19 @@ public class ConversationManager : Manager<ConversationManager>
             pre.transform.localScale = Vector3.one;
 
             Transform parent = convText.transform.parent;
-            parent.SetSiblingIndex(parent.GetSiblingIndex() + 1);
+            parent.SetSiblingIndex(parent.GetSiblingIndex() + 10);
 
             parent = talkerText.transform.parent;
-            parent.SetSiblingIndex(parent.GetSiblingIndex() + 1);
+            parent.SetSiblingIndex(parent.GetSiblingIndex() + 10);
 
-            parent = distracterPopup.transform;
-            parent.SetSiblingIndex(parent.GetSiblingIndex() + 1);
+            parent = clickTrigger.transform;
+            parent.SetSiblingIndex(parent.GetSiblingIndex() + 10);
+
+            if (distracterPopup != null)
+            {
+                parent = distracterPopup.transform.GetComponent<RectTransform>();
+                parent.SetSiblingIndex(parent.GetSiblingIndex() + 10);
+            }
         }
         else
         {

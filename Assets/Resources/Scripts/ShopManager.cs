@@ -120,6 +120,7 @@ public class ShopManager : Manager<ShopManager>
 
         if(level == SceneManager.Instance.GetLevel("ShopScene"))
         {
+            TutorialManager.Instance.TryTutorial("55");
             moneyIcon = GameObject.Find("MoneyIcon").transform;
             moneyText = GameObject.Find("MoneyText").transform;
         }
@@ -139,6 +140,9 @@ public class ShopManager : Manager<ShopManager>
         shopPopup.transform.parent = UIManager.Instance.Canvas.transform;
         shopPopup.transform.localPosition = Vector3.zero;
         shopPopup.transform.localScale = Vector3.one;
+
+        if (shopType == SkinType.Floor || shopType == SkinType.Wall)
+            shopPopup.IconImage.transform.localScale = new Vector3(0.25f, 0.25f, 1);
 
         GameObject[] objs;
         if(shoppingList.TryGetValue(shopType, out objs))

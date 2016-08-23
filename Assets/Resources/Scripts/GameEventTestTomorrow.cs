@@ -29,7 +29,8 @@ public class GameEventTestTomorrow : GameEvent
 
     public override void EventEnded()
     {
-        GameManager.Instance.scheduleButtonType = ScheduleButtonType.Test;
+        GameEventTestResult.executable = true;
+        GameManager.scheduleButtonType = ScheduleButtonType.Test;
         SceneManager.Instance.ChangeScene("GameScene");
     }
 }

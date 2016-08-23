@@ -44,6 +44,7 @@ public class Manager<T> : MonoBehaviour where T : Manager<T>
         }
 
         inited = true;
+        var ins = Instance;
         DontDestroyOnLoad(gameObject);
     }
 

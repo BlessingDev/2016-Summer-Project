@@ -28,7 +28,7 @@ public class GameEventInterviewTomorrow : GameEvent
 
     public override void EventEnded()
     {
-        GameManager.Instance.scheduleButtonType = ScheduleButtonType.Interview;
+        GameManager.scheduleButtonType = ScheduleButtonType.Interview;
         SceneManager.Instance.ChangeScene("GameScene");
     }
 }

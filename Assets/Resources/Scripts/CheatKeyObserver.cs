@@ -27,6 +27,11 @@ public class CheatKeyObserver : MonoBehaviour
         {
             EndDate();
         }
+        if(Input.GetKeyDown(KeyCode.X))
+        {
+            ExamDate();
+        }
+
         if(Input.GetKeyDown(KeyCode.M))
         {
             GameManager.Instance.Money += 40;
@@ -36,20 +41,74 @@ public class CheatKeyObserver : MonoBehaviour
         {
             CourseSelect();
         }
+        if(Input.GetKeyDown(KeyCode.V))
+        {
+            ConversationManager.Instance.StartConversationEvent("Vacation Ceremony");
+            EventManager.Instance.SetCurEvent("Vacation Ceremony");
+        }
         if(Input.GetKeyDown(KeyCode.O))
         {
-            OpeningCeremony();
+            OpeningCeremony();  // 문이과 선택과목이 반영되도록
         }
-        if(Input.GetKey(KeyCode.G))
+        if(Input.GetKeyDown(KeyCode.S))
         {
-            GoOutEvent();
+            ConversationManager.Instance.StartConversationEvent("Sleep Too Less");
+            EventManager.Instance.SetCurEvent("Sleep Too Less");
         }
 
-        if(Input.GetKey(KeyCode.T))
+
+        if(Input.GetKeyDown(KeyCode.T))
+        {
+        }
+
+        if(Input.GetKey(KeyCode.Alpha1))
+        {
+            GameManager.Instance.GameDate = new Date(2, 6, 8);
+        }
+        if(Input.GetKey(KeyCode.Alpha2))
+        {
+            ConversationManager.Instance.StartConversationEvent("Chat Cafeteria");
+            EventManager.Instance.SetCurEvent("Chat Cafeteria");
+        }
+        if (Input.GetKey(KeyCode.Alpha3))
+        {
+            ConversationManager.Instance.StartConversationEvent("Chat Competition");
+            EventManager.Instance.SetCurEvent("Chat Competition");
+        }
+        if (Input.GetKey(KeyCode.Alpha4))
+        {
+            ConversationManager.Instance.StartConversationEvent("Chat Library");
+            EventManager.Instance.SetCurEvent("Chat Library");
+        }
+        if (Input.GetKey(KeyCode.Alpha5))
+        {
+            ConversationManager.Instance.StartConversationEvent("Chat Newspaper");
+            EventManager.Instance.SetCurEvent("Chat Newspaper");
+        }
+        if (Input.GetKey(KeyCode.Alpha6))
+        {
+            ConversationManager.Instance.StartConversationEvent("Election");
+        }
+        if (Input.GetKey(KeyCode.Alpha7))
+        {
+            ConversationManager.Instance.StartConversationEvent("Go Out Movie");
+            EventManager.Instance.SetCurEvent("Go Out Movie");
+        }
+        if (Input.GetKey(KeyCode.Alpha8))
+        {
+            ConversationManager.Instance.StartConversationEvent("Political View Presentation");
+        }
+        if (Input.GetKey(KeyCode.Alpha9))
+        {
+            ConversationManager.Instance.StartConversationEvent("Teacher Help");
+        }
+        if (Input.GetKey(KeyCode.Alpha0))
         {
             ConversationManager.Instance.StartConversationEvent("University Select");
+            EventManager.Instance.SetCurEvent("University Select");
         }
-	}
+
+    }
 
     private void AutoSchedule()
     {
@@ -99,5 +158,15 @@ public class CheatKeyObserver : MonoBehaviour
     {
         ConversationManager.Instance.StartConversationEvent("Go Out Movie");
         EventManager.Instance.SetCurEvent("Go Out Movie");
+    }
+
+    private void ExamDate()
+    {
+        Date gameDate = GameManager.Instance.GameDate;
+
+        gameDate.Month = 5;
+        gameDate.Day = 2;
+
+        GameManager.Instance.GameDate = gameDate;
     }
 }

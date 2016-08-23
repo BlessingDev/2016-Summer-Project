@@ -131,6 +131,7 @@ public class MovementManager : Manager<MovementManager>
 
     private void GoByPath()
     {
+        SoundManager.Instance.PlayEffect("DF01032(걷는 소리)");
         if (!pathMoving)
         {
             pathMoving = true;
@@ -158,6 +159,7 @@ public class MovementManager : Manager<MovementManager>
             {
                 path = null;
                 playerAnimation.SetFloat("xSpeed", 0);
+                SoundManager.Instance.StopEffects("DF01032(걷는 소리)");
             }
         }
     }

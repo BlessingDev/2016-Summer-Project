@@ -40,6 +40,9 @@ public class SceneManager : Manager<SceneManager>
 
     public void ChangeScene(int index)
     {
+        if(SoundManager.IsInited)
+            SoundManager.Instance.StopAllEffects();
+
         UnityEngine.SceneManagement.SceneManager.LoadScene(index);
     }
 

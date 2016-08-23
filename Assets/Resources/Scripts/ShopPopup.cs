@@ -65,6 +65,7 @@ public class ShopPopup : MonoBehaviour
             return;
         }
 
+        TutorialManager.Instance.TryTutorial("66");
         purchaseImage = purchaseButton.GetComponent<Image>();
         purchaseImageNormal = purchaseImage.sprite;
         purchaseImagePushed = purchaseButton.spriteState.pressedSprite;

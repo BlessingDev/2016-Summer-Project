@@ -31,6 +31,7 @@ public enum ScheduleType
     ProbabilityAndStatistics,
     Classic,
     EnglishReadingAndWriting,
+    PCRoom
 }
 
 public abstract class Schedule : MonoBehaviour

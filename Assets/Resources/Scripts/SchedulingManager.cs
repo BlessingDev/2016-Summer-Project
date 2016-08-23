@@ -225,6 +225,7 @@ public class SchedulingManager : Manager<SchedulingManager>
             curPlace = 1;
 
             MakeSteakerBook();
+            TutorialManager.Instance.TryTutorial("33");
         }
         else if (level == SceneManager.Instance.GetLevel("GameScene"))
         {
@@ -401,7 +402,7 @@ public class SchedulingManager : Manager<SchedulingManager>
             curTime += 1;
             SetCutSceneAnimation();
             SetParameterBar();
-            SoundManager.Instance.PlayEffect("DE03033(초침 소리)");
+            SoundManager.Instance.PlayEffectForce("DE03033(초침 소리)");
         }
     }
 
@@ -416,8 +417,6 @@ public class SchedulingManager : Manager<SchedulingManager>
             case ScheduleType.BasicMath:
             case ScheduleType.English:
             case ScheduleType.Korean:
-            case ScheduleType.Art:
-            case ScheduleType.Music:
             case ScheduleType.Science:
             case ScheduleType.SocialStudy:
             case ScheduleType.WorldHistory:
@@ -431,6 +430,15 @@ public class SchedulingManager : Manager<SchedulingManager>
                 break;
             case ScheduleType.Movie:
                 aniType = 5;
+                break;
+            case ScheduleType.Art:
+                aniType = 7;
+                break;
+            case ScheduleType.Music:
+                aniType = 8;
+                break;
+            case ScheduleType.PCRoom:
+                aniType = 9;
                 break;
         }
 

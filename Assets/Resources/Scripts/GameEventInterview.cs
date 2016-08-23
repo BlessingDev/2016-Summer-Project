@@ -23,8 +23,11 @@ public class GameEventInterview : GameEvent
     {
         GameManager.Instance.SetParameter("InterviewScore",
             ConversationManager.Instance.GetParameter("Score"));
-        GameManager.Instance.scheduleButtonType = ScheduleButtonType.Schedule;
+        GameManager.scheduleButtonType = ScheduleButtonType.Schedule;
 
+        Date gameDate = GameManager.Instance.GameDate;
+        gameDate.Day += 1;
+        GameManager.Instance.GameDate = gameDate;
         SceneManager.Instance.ChangeScene("GameScene");
     }
 }

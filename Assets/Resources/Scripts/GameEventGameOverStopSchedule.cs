@@ -43,7 +43,7 @@ public class GameEventGameOverStopSchedule : GameEvent {
 
     public override void EventEnded()
     {
-        GameManager.Instance.scheduleButtonType = ScheduleButtonType.End;
+        GameManager.scheduleButtonType = ScheduleButtonType.End;
         GameManager.Instance.InitScheduleButton();
     }
 }

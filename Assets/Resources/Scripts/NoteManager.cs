@@ -104,6 +104,7 @@ public class NoteManager :  Manager<NoteManager>
         InitPossibleNodeData();
         RefreshText();
         CheckTurnOverEnable();
+        TutorialManager.Instance.TryTutorial("22");
     }
 
     // 노트 신에 들어갈 때마다 불러서 보여줄 수 있는 노트들을 미리 넣어 놓는다.
@@ -219,6 +220,7 @@ public class NoteManager :  Manager<NoteManager>
 
     public void TurnOverLeft()
     {
+        SoundManager.Instance.PlayEffect("CE02044(종이 넘기는 소리)");
         leftButton.enabled = false;
         rightButton.enabled = false;
 
@@ -233,6 +235,7 @@ public class NoteManager :  Manager<NoteManager>
 
     public void TurnOverRight()
     {
+        SoundManager.Instance.PlayEffect("CE02044(종이 넘기는 소리)");
         leftButton.enabled = false;
         rightButton.enabled = false;
 

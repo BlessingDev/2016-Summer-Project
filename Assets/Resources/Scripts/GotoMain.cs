@@ -12,17 +12,22 @@ public class GotoMain : MonoBehaviour
     private Sprite reservedNormal = null;
     private Sprite reservedPushed = null;
     private bool lockButton = false;
+    private bool inited = false;
 
     void Start()
     {
-        image = GetComponent<Image>();
-        button = GetComponent<Button>();
+        if(!inited)
+        {
+            inited = true;
+            image = GetComponent<Image>();
+            button = GetComponent<Button>();
 
-        normalNormal = image.sprite;
-        var state = button.spriteState;
-        normalPushed = state.pressedSprite;
-        reservedNormal = Resources.Load<Sprite>("Sprites/ScheduleUI/Schedule_Cancel_Reserve_Normal");
-        reservedPushed = Resources.Load<Sprite>("Sprites/ScheduleUI/Schedule_Cancel_Reserve_Pushed");
+            normalNormal = image.sprite;
+            var state = button.spriteState;
+            normalPushed = state.pressedSprite;
+            reservedNormal = Resources.Load<Sprite>("Sprites/ScheduleUI/Schedule_Cancel_Reserve_Normal");
+            reservedPushed = Resources.Load<Sprite>("Sprites/ScheduleUI/Schedule_Cancel_Reserve_Pushed");
+        }
     }
 
     public void OnClick()
@@ -31,6 +36,9 @@ public class GotoMain : MonoBehaviour
         {
             if (!reserved)
             {
+                if (!inited)
+                    Start();
+
                 image.sprite = reservedNormal;
                 var state = button.spriteState;
                 state.pressedSprite = reservedPushed;
